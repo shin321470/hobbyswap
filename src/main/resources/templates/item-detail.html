@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>商品詳情</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="navbar">
+    <a href="/" class="logo">HobbySwap</a>
+</div>
+<div class="container">
+    <a href="/">&larr; 回首頁</a>
+    <h1 th:text="${item.title}"></h1>
+    <p class="price" th:text="'價格: $ ' + ${item.price}"></p>
+    <p th:text="${item.description}">描述</p>
+    <p>上架時間: <span th:text="${item.uploadDate}"></span></p>
+
+    <div th:if="${item.status == 'ON_SALE'}">
+        <!-- 未登入顯示：提示登入 -->
+        <div th:if="${#authentication.principal == 'anonymousUser'}">
+            <p><a href="/login">登入</a> 後即可購買</p>
+        </div>
+        <!-- 已登入顯示：購買按鈕 -->
+        <div th:if="${#authentication.principal != 'anonymousUser'}">
+            <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
+                <button type="submit" class="btn-buy">立即購買</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 商品已售出時顯示 -->
+    <div th:if="${item.status == 'SOLD'}">
+        <h2 style="color:red;">已售出</h2>
+    </div>
+</div>
+</body>
+</html>

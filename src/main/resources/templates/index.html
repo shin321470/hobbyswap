@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>HobbySwap 首頁</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="navbar">
+    <a href="/" class="logo">HobbySwap</a>
+    <div class="nav-links">
+        <!-- 判斷使用者狀態：未登入顯示登入/註冊 -->
+        <span th:if="${#authentication.principal == 'anonymousUser'}">
+                <a href="/login">登入</a>
+                <a href="/register">註冊</a>
+            </span>
+        <!-- 判斷使用者狀態：已登入顯示使用者名稱與登出 -->
+        <span th:if="${#authentication.principal != 'anonymousUser'}">
+                <span>Hi, <span th:text="${#authentication.name}">User</span>!</span>
+                <a href="/items/new" class="btn">我要刊登</a>
+                <form action="/logout" method="post" style="display:inline;">
+                    <!-- CSRF Token 會由 Thymeleaf 自動處理 -->
+                    <button type="submit" class="btn-logout">登出</button>
+                </form>
+            </span>
+    </div>
+</div>
+
+<div class="container">
+    <h1>最新上架商品</h1>
+    <div class="item-grid">
+        <div th:each="item : ${items}" class="card">
+            <h3 th:text="${item.title}">標題</h3>
+            <p class="price" th:text="'$ ' + ${item.price}">價格</p>
+            <p>賣家: <span th:text="${item.seller.name}">名字</span></p>
+            <a th:href="@{'/items/' + ${item.id}}" class="btn-sm">查看詳情</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

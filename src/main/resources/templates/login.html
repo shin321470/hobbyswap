@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>登入</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="container" style="max-width:400px; margin-top:50px;">
+    <h2>登入 HobbySwap</h2>
+    <form action="/login" method="post">
+        <label>Email:</label>
+        <input type="text" name="username" required>
+
+        <label>密碼:</label>
+        <input type="password" name="password" required>
+
+        <button type="submit" class="btn">登入</button>
+    </form>
+    <p>還沒帳號? <a href="/register">註冊</a></p>
+    <p style="color:gray; font-size:0.8em;">(測試帳號: alice@test.com / password)</p>
+</div>
+</body>
+</html>
