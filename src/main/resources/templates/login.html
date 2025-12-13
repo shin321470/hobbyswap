@@ -1,23 +1,44 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>登入</title>
+    <meta charset="UTF-8">
+    <title>登入 SYSTEM ACCESS</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="container" style="max-width:400px; margin-top:50px;">
+
+<div class="navbar">
+    <a href="/" class="logo">HobbySwap</a>
+
+</div>
+
+<div class="auth-container">
     <h2>登入 HobbySwap</h2>
     <form action="/login" method="post">
         <label>Email:</label>
-        <input type="text" name="username" required>
+        <input type="text" name="username" required placeholder="INPUT USER EMAIL...">
 
         <label>密碼:</label>
-        <input type="password" name="password" required>
+        <input type="password" name="password" required placeholder="******">
 
         <button type="submit" class="btn">登入</button>
     </form>
-    <p>還沒帳號? <a href="/register">註冊</a></p>
-    <p style="color:gray; font-size:0.8em;">(測試帳號: alice@test.com / password)</p>
+
+    <p style="margin-top: 20px; display: flex; align-items: center;">
+        還沒帳號?
+        <a href="/register" class="btn" style="width: auto; display: inline-block; margin-left: 10px; margin-top: 0;">
+            註冊
+        </a>
+    </p>
+
+    <p style="margin-top: 30px; border-top: 1px dashed #999; padding-top: 15px; font-size: 0.75em; color: #666; background: #f0f0f0; padding: 10px;">
+        > DEBUG_INFO:<br>
+        (測試帳號: alice@test.com / password)
+    </p>
 </div>
+
 </body>
 </html>
