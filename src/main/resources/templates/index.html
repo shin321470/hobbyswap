@@ -3,48 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <title>HobbySwap Supply</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico?v=2}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-
 </head>
 <body>
 
 <div class="navbar">
     <a href="/" class="logo">HobbySwap</a>
+
     <div class="nav-links">
-        <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-row">
-                <a href="/register" class="btn" style="margin-right: 15px;">REGISTER</a>
-                <a href="/login" class="btn">LOGIN</a>
-        </span>
-        <span th:if="${#authentication.principal != 'anonymousUser'}">
-                <span style="font-size: 0.9rem; margin-right: 10px;">USER: <span th:text="${#authentication.name}" style="background:var(--highlight); padding:0 5px; color:black; font-weight:bold;">User</span></span>
-                <a href="/items/new" class="btn">我要刊登</a>
+
+        <div class="nav-right-group">
+
+            <div class="lang-dropdown">
+                <button class="lang-btn">
+                    <span>🌐 LANGUAGE ▼</span>
+                </button>
+                <div class="lang-content">
+                    <a href="?lang=zh_TW">繁體中文 [TW]</a>
+                    <a href="?lang=en">ENGLISH [EN]</a>
+                    <a href="?lang=ja">日本語 [JP]</a>
+                </div>
+            </div>
+
+            <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-stack-vertical" style="justify-content: center;">
+                <a href="/login" class="btn-login-main" style="width: 140px; text-align: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
+
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
+                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
+                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
+                </span>
+
+                <a href="/items/new" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem;" th:text="#{nav.sell}">SELL</a>
+
                 <form action="/logout" method="post" style="display:inline;">
-                    <button type="submit" class="btn-logout">LOGOUT</button>
+                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
                 </form>
-        </span>
-    </div>
+            </span>
+
+        </div> </div>
 </div>
 
 <div class="hero-section">
-    <h1 class="hero-title">PERFORMANCE</h1>
-    <h1 class="hero-title hero-stroke">PACK</h1>
-    <div class="hero-subtitle">/// LATEST DROP IN HOBBYSWAP ///</div>
+    <h1 class="hero-title" th:text="#{hero.title1}">PERFORMANCE</h1>
+    <h1 class="hero-title hero-stroke" th:text="#{hero.title2}">PACK</h1>
+    <div class="hero-subtitle" th:text="#{hero.subtitle}">/// LATEST DROP IN HOBBYSWAP ///</div>
 </div>
 
 <div class="container">
-    <h1>最新上架商品</h1>
-    <div class="item-grid">
-        <div th:each="item : ${items}" class="card">
-            <h3 th:text="${item.title}">標題</h3>
-            <p class="price" th:text="'$ ' + ${item.price}">價格</p>
-            <p>賣家: <span th:text="${item.seller.name}">名字</span></p>
-            <a th:href="@{'/items/' + ${item.id}}" class="btn-sm">查看詳情 -></a>
-        </div>
+    <h1 th:text="#{hero.subtitle}">最新上架商品</h1> <div class="item-grid">
+    <div th:each="item : ${items}" class="card">
+        <h3 th:text="${item.title}">標題</h3>
+        <p class="price">
+            <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
+        </p>
+        <p>
+            <span th:text="#{item.seller}">賣家</span>: <span th:text="${item.seller.name}">名字</span>
+        </p>
+        <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.buy} + ' ->'">查看詳情 -></a>
     </div>
 </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h4 th:text="#{footer.company}">COMPANY</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+                <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+                <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+                <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.service}">SERVICE</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+                <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+                <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+                <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.contact}">CONTACT US</h4>
+            <div class="contact-info">
+                <p><strong>TEL:</strong> 02-9487-5566</p>
+                <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+                <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+            </div>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+            <div class="social-links">
+                <a href="#">[ IG ]</a>
+                <a href="#">[ FB ]</a>
+                <a href="#">[ YT ]</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+
+        <div>
+            &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
+        </div>
+
+        <div class="payment-icons">
+            <span>VISA</span>
+            <span>MASTER</span>
+            <span>JCB</span>
+            <span>APPLE PAY</span>
+        </div>
+    </div>
+</footer>
 
 </body>
 </html>
