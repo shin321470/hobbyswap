@@ -107,3 +107,18 @@ Caused by: org.h2.jdbc.JdbcSQLInvalidAuthorizationSpecException: Wrong user name
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:522)
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
 	... 103 more
+2025-12-16 22:41:26.113650+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM USERS USERS [*]ID ID USERS"; SQL statement:
+SELECT * FROM USERS USERS ID ID USERS [42000-232]
+2025-12-16 22:41:29.268060+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM USERS USERS [*]ID ID USERS"; SQL statement:
+SELECT * FROM USERS USERS ID ID USERS [42000-232]
+2025-12-16 22:41:53.723786+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM USERS EMAIL [*]PASSWORD"; SQL statement:
+SELECT * FROM USERS EMAIL PASSWORD [42000-232]
+2025-12-16 22:46:41.840734+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]STATUS ITEMS"; expected "SAVEPOINT, SCRIPT, SHUTDOWN"; SQL statement:
+STATUS ITEMS [42001-232]
+2025-12-16 22:46:42.675842+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]STATUS ITEMS"; expected "SAVEPOINT, SCRIPT, SHUTDOWN"; SQL statement:
+STATUS ITEMS [42001-232]
