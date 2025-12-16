@@ -11,7 +11,7 @@
 </div>
 <div class="container">
     <h1>刊登新商品</h1>
-    <form action="/items" method="post" th:object="${item}">
+    <form th:action="@{/items}" method="post" th:object="${item}">
         <label>標題:</label>
         <input type="text" th:field="*{title}" required>
 
