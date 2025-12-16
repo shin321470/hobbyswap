@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>商品詳情</title>
+    <title th:text="${item.title} + ' - SPEC'">商品詳情</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico?v=2}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-
 </head>
 <body>
 
@@ -15,34 +15,100 @@
 </div>
 
 <div class="container container-narrow">
-    <a href="/" class="back-link">&larr; 回首頁</a>
+    <a href="/" class="back-link" th:text="#{item.back}">&larr; 回首頁</a>
 
     <div class="spec-card">
 
         <h1 th:text="${item.title}"></h1>
 
-        <p class="price" th:text="'價格: $ ' + ${item.price}"></p>
+        <p class="price">
+            <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
+        </p>
 
-        <p th:text="${item.description}">描述</p>
+        <p>
+            <span th:text="#{item.desc}">描述</span>: <span th:text="${item.description}"></span>
+        </p>
 
-        <p>上架時間: <span th:text="${item.uploadDate}"></span></p>
+        <p>
+            <span th:text="#{item.date}">上架時間</span>: <span th:text="${item.uploadDate}"></span>
+        </p>
 
         <div th:if="${item.status == 'ON_SALE'}">
             <div th:if="${#authentication.principal == 'anonymousUser'}">
-                <p><a href="/login">登入</a> 後即可購買</p>
+                <p>
+                    <a href="/login" th:text="#{nav.login}">登入</a>
+                    <span th:text="#{item.login_first}">後即可購買</span>
+                </p>
             </div>
             <div th:if="${#authentication.principal != 'anonymousUser'}">
                 <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
-                    <button type="submit" class="btn-buy">立即購買</button>
+                    <button type="submit" class="btn-buy" th:text="#{item.buy}">立即購買</button>
                 </form>
             </div>
         </div>
 
         <div th:if="${item.status == 'SOLD'}">
-            <h2 class="sold-stamp">已售出</h2>
+            <h2 class="sold-stamp" th:text="#{item.sold}">已售出</h2>
         </div>
 
-    </div> </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h4 th:text="#{footer.company}">COMPANY</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+                <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+                <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+                <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.service}">SERVICE</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+                <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+                <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+                <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.contact}">CONTACT US</h4>
+            <div class="contact-info">
+                <p><strong>TEL:</strong> 02-1234-5678</p>
+                <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+                <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+            </div>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+            <div class="social-links">
+                <a href="#">[ IG ]</a>
+                <a href="#">[ FB ]</a>
+                <a href="#">[ YT ]</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+
+        <div>
+            &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
+        </div>
+
+        <div class="payment-icons">
+            <span>VISA</span>
+            <span>MASTER</span>
+            <span>JCB</span>
+            <span>APPLE PAY</span>
+        </div>
+    </div>
+</footer>
 
 </body>
 </html>

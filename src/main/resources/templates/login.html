@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>登入 SYSTEM ACCESS</title>
+    <title th:text="#{login.title}">登入 SYSTEM ACCESS</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico?v=2}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,33 +13,89 @@
 
 <div class="navbar">
     <a href="/" class="logo">HobbySwap</a>
-
 </div>
 
 <div class="auth-container">
-    <h2>登入 HobbySwap</h2>
+    <h2 th:text="#{login.title}">登入 HobbySwap</h2>
+
     <form action="/login" method="post">
-        <label>Email:</label>
-        <input type="text" name="username" required placeholder="INPUT USER EMAIL...">
+        <label th:text="#{login.email}">Email:</label>
+        <input type="text" name="username" required th:placeholder="#{login.email_ph}">
 
-        <label>密碼:</label>
-        <input type="password" name="password" required placeholder="******">
+        <label th:text="#{login.password}">密碼:</label>
+        <input type="password" name="password" required th:placeholder="#{login.password_ph}">
 
-        <button type="submit" class="btn">登入</button>
+        <button type="submit" class="btn" th:text="#{login.btn}">登入</button>
     </form>
 
     <p style="margin-top: 20px; display: flex; align-items: center;">
-        還沒帳號?
-        <a href="/register" class="btn" style="width: auto; display: inline-block; margin-left: 10px; margin-top: 0;">
+        <span th:text="#{login.no_account}">還沒帳號?</span>
+
+        <a href="/register" class="btn" style="width: auto; display: inline-block; margin-left: 10px; margin-top: 0;" th:text="#{nav.register}">
             註冊
         </a>
     </p>
 
     <p style="margin-top: 30px; border-top: 1px dashed #999; padding-top: 15px; font-size: 0.75em; color: #666; background: #f0f0f0; padding: 10px;">
-        > DEBUG_INFO:<br>
-        (測試帳號: alice@test.com / password)
+        > <span th:text="#{login.debug_info}">DEBUG_INFO:</span><br>
+        (<span th:text="#{login.debug}">測試帳號</span>: alice@test.com / password)
     </p>
 </div>
 
+<footer class="footer">
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h4 th:text="#{footer.company}">COMPANY</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+                <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+                <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+                <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.service}">SERVICE</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+                <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+                <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+                <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.contact}">CONTACT US</h4>
+            <div class="contact-info">
+                <p><strong>TEL:</strong> 02-1234-5678</p>
+                <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+                <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+            </div>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+            <div class="social-links">
+                <a href="#">[ IG ]</a>
+                <a href="#">[ FB ]</a>
+                <a href="#">[ YT ]</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+
+        <div>
+            &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
+        </div>
+
+        <div class="payment-icons">
+            <span>VISA</span>
+            <span>MASTER</span>
+            <span>JCB</span>
+            <span>APPLE PAY</span>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

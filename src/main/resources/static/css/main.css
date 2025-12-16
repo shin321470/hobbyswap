@@ -1,4 +1,4 @@
-/* main.css */
+/* main.css - Optimized Version */
 
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -11,14 +11,13 @@
     --border-width: 2px;
 }
 
-/* 基礎設定 (Base) */
+/* 1. 基礎設定 (Base) */
 * { box-sizing: border-box; }
 
 body {
     margin: 0;
     padding: 0;
     background-color: var(--bg-color);
-    /* 工業風網格背景 */
     background-image:
         linear-gradient(var(--grid-line) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
@@ -30,11 +29,12 @@ body {
     flex-direction: column;
 }
 
-/* 導覽列 (Navbar) */
+/* 2. 導覽列 (Navbar) */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
     padding: 20px 40px;
     border-bottom: var(--border-width) solid var(--text-main);
     background: rgba(255,255,255, 0.95);
@@ -55,6 +55,7 @@ body {
     padding: 5px 10px;
     background: white;
     box-shadow: 4px 4px 0 var(--highlight);
+    white-space: nowrap;
     transition: 0.2s;
 }
 
@@ -64,9 +65,10 @@ body {
 }
 
 .nav-links {
-    display: flex;
+    display: flex !important;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+    margin-left: auto;
 }
 
 .nav-links a {
@@ -77,37 +79,151 @@ body {
     font-size: 0.9rem;
 }
 
-.nav-links a:not(.btn):hover {
+.nav-links a:not(.btn):not(.btn-login-main):not(.link-register-sub):hover {
     text-decoration: underline;
     text-decoration-thickness: 3px;
     text-decoration-color: var(--highlight);
 }
 
-/* 導覽列按鈕 */
-.navbar .btn {
+/* 3. 導覽列右側群組  */
+.nav-right-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.auth-stack-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0px;
+}
+
+/* 4. 語言下拉選單 */
+.lang-dropdown {
+    position: relative;
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+}
+
+.lang-btn {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--text-main);
+    padding: 5px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 120px; /* 給語言按鈕一個固定寬度，保持整齊 */
+    transition: 0.2s;
+}
+
+.lang-btn:hover {
+    background: var(--text-main);
+    color: white;
+}
+
+.lang-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    min-width: 120px;
+    box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
+    border: 2px solid var(--text-main);
+    z-index: 9999;
+}
+
+.lang-dropdown:hover .lang-content {
+    display: block;
+}
+
+.lang-content a {
+    color: var(--text-main);
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.85rem;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+}
+
+.lang-content a:last-child { border-bottom: none; }
+
+.lang-content a:hover {
+    background: var(--highlight);
+    color: black;
+}
+
+/* 5. 按鈕樣式 (Buttons) */
+/* 通用按鈕 */
+.btn {
     display: inline-block;
     width: auto;
-    min-width: 100px;
-    padding: 10px 20px;
-    text-align: center;
-    margin: 0;
-    border: 1px solid var(--text-main);
     background: var(--text-main);
     color: white !important;
-    font-size: 0.9rem;
+    border: 2px solid var(--text-main);
+    padding: 10px 20px;
     font-family: 'Archivo Black', sans-serif;
-    letter-spacing: 0.5px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: center;
     text-decoration: none !important;
-    /* 切角設計 */
     clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
 }
 
-.navbar .btn:hover {
+.btn:hover {
     background: var(--highlight);
     color: black !important;
-    border-color: black;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.2);
     transform: translateY(-2px);
 }
+
+/* 登入專用按鈕 (繼承 btn 風格但微調 padding) */
+.btn-login-main {
+    display: block;
+    background: var(--text-main);
+    color: white !important;
+    border: 2px solid var(--text-main);
+    padding: 8px 20px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1rem;
+    text-decoration: none !important;
+    text-transform: uppercase;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: 0.2s;
+}
+
+.btn-login-main:hover {
+    background: var(--highlight);
+    color: black !important;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+
+.btn-sm {
+    display: block;
+    width: 100%;
+    padding: 12px 0;
+    background: var(--text-main);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    margin-top: auto;
+    border: 1px solid black;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+.btn-sm:hover { background: white; color: black; }
 
 .btn-logout {
     background: none;
@@ -122,10 +238,22 @@ body {
 }
 .btn-logout:hover { background: var(--highlight); }
 
+/* 註冊小連結 */
+.link-register-sub {
+    font-size: 0.75rem;
+    color: #666;
+    text-decoration: none;
+    font-family: 'Space Mono', monospace;
+    font-weight: bold;
+    border-bottom: 1px solid transparent;
+    margin-right: 2px;
+}
+.link-register-sub:hover {
+    color: var(--text-main);
+    border-bottom: 1px solid var(--highlight);
+}
 
-/* 佈局容器 (Containers) */
-
-/* 預設容器 (首頁用) */
+/* 6. 容器與排版 */
 .container {
     max-width: 1400px;
     margin: 0 auto;
@@ -134,31 +262,37 @@ body {
     width: 100%;
 }
 
-/* 窄版容器 (商品詳情頁用) */
-.container-narrow {
-    max-width: 800px;
-}
+.container-narrow { max-width: 800px; }
 
-/* 認證卡片容器 (登入/註冊用) */
 .auth-container {
     max-width: 450px;
     width: 90%;
-    margin: 60px auto; /* 上下留白置中 */
+    margin: 60px auto;
     background: white;
     border: var(--border-width) solid var(--text-main);
     padding: 40px;
     box-shadow: 15px 15px 0px rgba(0,0,0,0.1);
     position: relative;
 }
-
-.auth-row {
-    display: flex;
-    flex-direction: row;
-    gap: 0px;
-    align-items: center;
+.auth-container::before {
+    content: '/// Welcome';
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background: var(--text-main);
+    color: white;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
 }
 
-/* 元件：Hero Section (首頁大標題) */
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* 7. 頁面元件 (Hero, Card, Forms) */
 .hero-section {
     padding: 60px 20px;
     text-align: center;
@@ -166,7 +300,6 @@ body {
     background: white;
     overflow: hidden;
 }
-
 .hero-title {
     font-family: 'Archivo Black', sans-serif;
     font-size: clamp(3rem, 8vw, 6rem);
@@ -177,12 +310,10 @@ body {
     color: var(--text-main);
     transform: skewX(-5deg);
 }
-
 .hero-stroke {
     color: transparent;
     -webkit-text-stroke: 2px black;
 }
-
 .hero-subtitle {
     margin-top: 20px;
     font-size: 1rem;
@@ -193,7 +324,6 @@ body {
     transform: skewX(-5deg);
 }
 
-/* 元件：卡片 (Cards) */
 .card {
     background: white;
     border: var(--border-width) solid var(--text-main);
@@ -206,12 +336,10 @@ body {
     min-height: 350px;
     box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
 }
-
 .card:hover {
     transform: translate(-4px, -4px);
     box-shadow: 8px 8px 0px var(--highlight);
 }
-
 .card h3 {
     font-family: 'Archivo Black', sans-serif;
     font-size: 1.4rem;
@@ -219,7 +347,6 @@ body {
     text-transform: uppercase;
     line-height: 1.1;
 }
-
 .card::after {
     content: '+';
     position: absolute;
@@ -230,7 +357,6 @@ body {
     font-weight: 100;
 }
 
-/* 規格表卡片 (詳情頁) */
 .spec-card {
     background: white;
     border: var(--border-width) solid var(--text-main);
@@ -238,28 +364,6 @@ body {
     padding: 40px;
     position: relative;
     overflow: hidden;
-}
-
-/* 元件：文字與排版 */
-h1 {
-    font-family: 'Archivo Black', sans-serif;
-    font-size: 2rem;
-    margin-bottom: 30px;
-    border-left: 10px solid var(--text-main);
-    padding-left: 20px;
-    text-transform: uppercase;
-}
-
-/* 登入註冊標題 */
-.auth-container h2 {
-    font-family: 'Archivo Black', sans-serif;
-    text-transform: uppercase;
-    font-size: 2rem;
-    margin-top: 0;
-    margin-bottom: 30px;
-    border-bottom: 4px solid var(--text-main);
-    padding-bottom: 10px;
-    letter-spacing: -1px;
 }
 
 .price {
@@ -270,8 +374,6 @@ h1 {
     border-bottom: 3px solid var(--highlight);
     width: fit-content;
 }
-
-/* 詳情頁價格標籤 */
 .price-tag {
     font-family: 'Archivo Black', sans-serif;
     font-size: 2.5rem;
@@ -281,86 +383,6 @@ h1 {
     padding: 5px 15px;
     transform: skewX(-5deg);
     margin: 15px 0;
-}
-
-/* 元件：表單 (Forms) */
-label {
-    display: block;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-    border-left: 4px solid var(--highlight);
-    padding-left: 10px;
-}
-
-input {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 25px;
-    border: 2px solid #ccc;
-    background: #FAFAFA;
-    font-family: 'Space Mono', monospace;
-    font-size: 1rem;
-    outline: none;
-    transition: 0.2s;
-    border-radius: 0;
-}
-
-input:focus {
-    border-color: var(--text-main);
-    background: #FFFFE0;
-    box-shadow: 4px 4px 0 var(--highlight);
-}
-
-/* 元件：按鈕 (Buttons) */
-.btn {
-    display: block;
-    width: 100%;
-    background: var(--text-main);
-    color: white;
-    border: 2px solid var(--text-main);
-    padding: 15px;
-    font-family: 'Archivo Black', sans-serif;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: 0.2s;
-    text-align: center;
-    text-decoration: none;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-}
-
-.btn:hover {
-    background: var(--highlight);
-    color: black;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.2);
-    transform: translateY(-2px);
-}
-
-.btn-sm {
-    display: block;
-    width: 100%;
-    padding: 12px 0;
-    background: var(--text-main);
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-weight: bold;
-    margin-top: auto;
-    border: 1px solid black;
-}
-.btn-sm:hover {
-    background: white;
-    color: black;
-}
-
-/* 實用工具 (Utilities) */
-.item-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
 }
 
 .sold-stamp {
@@ -382,16 +404,50 @@ input:focus {
     background: rgba(255, 255, 255, 0.8);
 }
 
-.auth-container::before {
-    content: '/// Welcome';
-    position: absolute;
-    top: -15px;
-    left: 20px;
-    background: var(--text-main);
-    color: white;
-    padding: 2px 10px;
-    font-size: 0.8rem;
+label {
+    display: block;
     font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    border-left: 4px solid var(--highlight);
+    padding-left: 10px;
+}
+input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 25px;
+    border: 2px solid #ccc;
+    background: #FAFAFA;
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.2s;
+    border-radius: 0;
+}
+input:focus {
+    border-color: var(--text-main);
+    background: #FFFFE0;
+    box-shadow: 4px 4px 0 var(--highlight);
+}
+
+h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    border-left: 10px solid var(--text-main);
+    padding-left: 20px;
+    text-transform: uppercase;
+}
+.auth-container h2 {
+    font-family: 'Archivo Black', sans-serif;
+    text-transform: uppercase;
+    font-size: 2rem;
+    margin-top: 0;
+    margin-bottom: 30px;
+    border-bottom: 4px solid var(--text-main);
+    padding-bottom: 10px;
+    letter-spacing: -1px;
 }
 
 .back-link {
@@ -412,3 +468,76 @@ input:focus {
     border-color: var(--text-main);
 }
 
+/* 8. Footer */
+.footer {
+    background: white;
+    border-top: var(--border-width) solid var(--text-main);
+    padding: 60px 40px 20px 40px;
+    margin-top: auto;
+    font-family: 'Space Mono', monospace;
+}
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #ccc;
+}
+.footer-col h4 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.2rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+}
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { margin-bottom: 10px; }
+.footer-links a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: inline-block;
+    transition: 0.2s;
+}
+.footer-links a:hover { background: var(--highlight); color: black; text-decoration: underline; }
+
+.contact-info p { margin: 5px 0; font-size: 0.9rem; }
+
+.social-links a {
+    color: var(--text-main) !important;
+    text-decoration: none;
+    border: 1px solid var(--text-main);
+    padding: 5px 10px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+.social-links a:hover {
+    background: var(--text-main);
+    color: white !important;
+    border-color: var(--text-main);
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 20px;
+    font-size: 0.8rem;
+    color: #666;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.payment-icons span {
+    border: 1px solid #ccc;
+    padding: 2px 5px;
+    margin-left: 5px;
+    font-size: 0.7rem;
+    background: #f9f9f9;
+}
