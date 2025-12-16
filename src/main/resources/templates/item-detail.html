@@ -1,56 +1,232 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title th:text="${item.title} + ' - SPEC'">商品詳情</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico?v=2}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        .product-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .product-image-area {
+            background: #e0e0e0;
+            border: 2px solid var(--text-main);
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #888;
+            position: relative;
+        }
+
+        .product-image-area::after {
+            content: 'NO IMAGE DATA';
+            font-family: 'Space Mono', monospace;
+        }
+
+        .product-info-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .product-title {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 2.5rem;
+            line-height: 1.1;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        /* 價格區塊 */
+        .product-price-box {
+            background: #fafafa;
+            padding: 20px;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .price-large {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 3rem;
+            color: var(--text-main);
+            /* 價格 highlight */
+            background: linear-gradient(120deg, transparent 0%, transparent 10%, var(--highlight) 10%, var(--highlight) 90%, transparent 90%);
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 10px;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            align-items: baseline;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .info-value {
+            color: var(--text-main);
+        }
+
+        .divider {
+            height: 1px;
+            background: #ddd;
+            margin: 10px 0;
+            border: none;
+        }
+
+        .action-box {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid var(--text-main);
+            background: white;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .product-layout { grid-template-columns: 1fr; }
+            .product-image-area { height: 300px; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="navbar">
-    <a href="/" class="logo">HobbySwap</a>
+    <a th:href="@{/}" class="logo">HobbySwap</a>
+
+    <div class="nav-links">
+
+        <div class="nav-right-group">
+
+            <div class="lang-dropdown">
+                <button class="lang-btn">
+                    <span>🌐 LANGUAGE ▼</span>
+                </button>
+                <div class="lang-content">
+                    <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+                    <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+                    <a th:href="@{?lang=ja}">日本語 [JP]</a>
+                </div>
+            </div>
+
+            <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-stack-vertical" style="justify-content: center;">
+                <a th:href="@{/login}" class="btn-login-main" style="width: 140px; text-align: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
+
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
+                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
+                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
+                </span>
+
+                <a th:href="@{/items/new}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem;" th:text="#{nav.sell}">SELL</a>
+
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+                </form>
+            </span>
+
+        </div>
+    </div>
 </div>
 
-<div class="container container-narrow">
-    <a href="/" class="back-link" th:text="#{item.back}">&larr; 回首頁</a>
+<div class="container">
+    <a th:href="@{/}" class="back-link" th:text="#{item.back}">&larr; 回首頁</a>
 
-    <div class="spec-card">
+    <div class="product-layout">
 
-        <h1 th:text="${item.title}"></h1>
-
-        <p class="price">
-            <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
-        </p>
-
-        <p>
-            <span th:text="#{item.desc}">描述</span>: <span th:text="${item.description}"></span>
-        </p>
-
-        <p>
-            <span th:text="#{item.date}">上架時間</span>: <span th:text="${item.uploadDate}"></span>
-        </p>
-
-        <div th:if="${item.status == 'ON_SALE'}">
-            <div th:if="${#authentication.principal == 'anonymousUser'}">
-                <p>
-                    <a href="/login" th:text="#{nav.login}">登入</a>
-                    <span th:text="#{item.login_first}">後即可購買</span>
-                </p>
-            </div>
-            <div th:if="${#authentication.principal != 'anonymousUser'}">
-                <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
-                    <button type="submit" class="btn-buy" th:text="#{item.buy}">立即購買</button>
-                </form>
-            </div>
+        <div class="product-image-area">
         </div>
 
-        <div th:if="${item.status == 'SOLD'}">
-            <h2 class="sold-stamp" th:text="#{item.sold}">已售出</h2>
-        </div>
+        <div class="product-info-area">
 
+            <h1 class="product-title" th:text="${item.title}">商品名稱</h1>
+
+            <div class="product-price-box">
+                <span class="price-large" th:text="'$ ' + ${item.price}">$ 1000</span>
+                <span th:if="${item.status == 'SOLD'}" class="sold-stamp" style="position:static; transform:none; font-size:1.5rem; padding:5px 10px; border-width:2px;" th:text="#{item.sold}">SOLD</span>
+            </div>
+
+            <hr class="divider">
+
+            <div>
+                <h4 style="margin: 10px 0; text-decoration: underline;" th:text="#{item.shipping}">運送資訊</h4>
+
+                <div class="info-row">
+                    <span class="info-label" th:text="#{item.shipping_from}">出貨地點</span>
+                    <span class="info-value">Taipei, Taiwan</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label" th:text="#{item.shipping_fee}">運費</span>
+                    <span class="info-value">$ 60 (7-11 / FamilyMart)</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label" th:text="#{item.shipping_est}">預計送達</span>
+                    <span class="info-value">3 - 5 Days (After Shipment)</span>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div>
+                <h4 style="margin: 10px 0; text-decoration: underline;" th:text="#{item.spec}">商品規格</h4>
+
+                <div class="info-row">
+                    <span class="info-label" th:text="#{item.condition}">商品狀況</span>
+                    <span class="info-value">Used - Good</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label" th:text="#{item.date}">上架時間</span>
+                    <span class="info-value" th:text="${item.uploadDate}">2023-01-01</span>
+                </div>
+
+                <div class="info-row" style="align-items: flex-start;">
+                    <span class="info-label" th:text="#{item.desc}">描述</span>
+                    <span class="info-value" th:text="${item.description}">商品描述內容...</span>
+                </div>
+            </div>
+
+            <div class="action-box" th:if="${item.status == 'ON_SALE'}">
+                <div class="info-row">
+                    <span class="info-label" th:text="#{item.payment}">付款方式</span>
+                    <span class="info-value" th:text="#{item.payment_desc}">Credit / ATM</span>
+                </div>
+
+                <div th:if="${#authentication.principal == 'anonymousUser'}" style="text-align: center; margin-top: 15px;">
+                    <a th:href="@{/login}" class="btn" th:text="#{nav.login}">LOGIN</a>
+                    <span style="margin-left: 10px;" th:text="#{item.login_first}">to buy</span>
+                </div>
+
+                <div th:if="${#authentication.principal != 'anonymousUser'}">
+                    <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
+                        <button type="submit" class="btn" style="width: 100%; font-size: 1.2rem; padding: 15px;" th:text="#{item.buy}">BUY NOW</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="action-box" th:if="${item.status == 'SOLD'}" style="background: #f0f0f0; border-color: #ccc;">
+                <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
+            </div>
+
+        </div>
     </div>
 </div>
 
@@ -79,7 +255,7 @@
         <div class="footer-col">
             <h4 th:text="#{footer.contact}">CONTACT US</h4>
             <div class="contact-info">
-                <p><strong>TEL:</strong> 02-1234-5678</p>
+                <p><strong>TEL:</strong> 02-9487-5566</p>
                 <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
                 <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
             </div>
@@ -96,11 +272,9 @@
     </div>
 
     <div class="copyright">
-
         <div>
             &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
         </div>
-
         <div class="payment-icons">
             <span>VISA</span>
             <span>MASTER</span>
