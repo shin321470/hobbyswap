@@ -12,44 +12,59 @@
 <body>
 
 <div class="navbar">
-    <a href="/" class="logo">HobbySwap</a>
+    <a th:href="@{/}" class="logo">HobbySwap</a>
 
     <div class="nav-links">
 
-        <div class="nav-right-group">
+        <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
 
             <div class="lang-dropdown">
                 <button class="lang-btn">
                     <span>🌐 LANGUAGE ▼</span>
                 </button>
                 <div class="lang-content">
-                    <a href="?lang=zh_TW">繁體中文 [TW]</a>
-                    <a href="?lang=en">ENGLISH [EN]</a>
-                    <a href="?lang=ja">日本語 [JP]</a>
+                    <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+                    <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+                    <a th:href="@{?lang=ja}">日本語 [JP]</a>
                 </div>
             </div>
 
-            <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-stack-vertical" style="justify-content: center;">
-                <a href="/login" class="btn-login-main" style="width: 140px; text-align: center;" th:text="#{nav.login}">LOGIN</a>
-            </span>
+            <span th:if="${#authentication.principal != 'anonymousUser'}"
+                  style="display:flex; align-items:center; gap: 20px;">
 
-            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
-                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
-                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
-                </span>
+        <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
+             <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
+        </span>
 
-                <a href="/chat" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; margin-right: 10px; background-color: #2c3e50;">
-    💬 CHAT
-</a>
+        <a th:href="@{/chat}" class="btn"
+           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+           th:text="#{nav.chat}">
+            💬 CHAT
+        </a>
 
-                <a href="/items/new" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem;" th:text="#{nav.sell}">SELL</a>
+        <a th:href="@{/items/new}" class="btn"
+           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+           th:text="#{nav.sell}">
+           SELL
+        </a>
 
-                <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
-                </form>
-            </span>
+        <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
+            <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+        </form>
+    </span>
 
-        </div> </div>
+            <span th:if="${#authentication.principal == 'anonymousUser'}"
+                  style="display:flex; align-items:center; gap: 20px;">
+
+        <a th:href="@{/login}" class="btn"
+           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+           th:text="#{nav.login}">
+            LOGIN
+        </a>
+    </span>
+
+        </div>
+    </div>
 </div>
 
 <div class="hero-section">
@@ -75,7 +90,7 @@
             </div>
             <h3 th:text="${item.title}" style="margin-bottom: 5px;">標題</h3>
 
-            <p class="price" style="color: var(--highlight); font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
+            <p class="price" style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
                 <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
             </p>
 

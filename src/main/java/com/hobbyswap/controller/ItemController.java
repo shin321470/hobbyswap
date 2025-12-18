@@ -77,4 +77,13 @@ public class ItemController {
         itemService.buyItem(id);
         return "redirect:/";
     }
+
+    @PostMapping("/items/{id}/delete")
+    public String deleteItem(@PathVariable Long id, Principal principal) {
+        Item item = itemService.findById(id);
+        if (item != null && item.getSeller().getEmail().equals(principal.getName())) {
+            itemService.deleteItem(id);
+        }
+        return "redirect:/";
+    }
 }
