@@ -2,103 +2,253 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>公共聊天室</title>
+    <title>Chat Room - HobbySwap</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
     <style>
-        .chat-container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #chat-box { height: 400px; border: 1px solid #ddd; overflow-y: scroll; padding: 10px; margin-bottom: 20px; background: #f9f9f9; }
-        .message { margin-bottom: 10px; padding: 8px; border-radius: 4px; }
-        .message.self { background-color: #e3f2fd; text-align: right; }
-        .message.other { background-color: #fff; border: 1px solid #eee; }
-        .sender-name { font-weight: bold; font-size: 0.8em; color: #666; display: block; }
-        .controls { display: flex; gap: 10px; }
-        #message-input { flex-grow: 1; padding: 10px; }
+        .chat-container {
+            width: 95%;
+            max-width: 500px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border: 2px solid var(--text-main);
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.1);
+        }
+
+        .chat-header {
+            border-bottom: 2px solid var(--text-main);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            margin: 0;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-right: 20px;
+            line-height: 1.1;
+        }
+
+        .online-status {
+            font-family: 'Space Mono';
+            font-size: 0.8rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .status-dot {
+            height: 12px;
+            width: 12px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            border: 1px solid black;
+        }
+
+        #chat-box {
+            height: 500px;
+            border: 2px solid var(--text-main);
+            overflow-y: scroll;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f0f0f0;
+            background-image:
+                linear-gradient(#ccc 1px, transparent 1px),
+                linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            max-width: 80%;
+            position: relative;
+            word-wrap: break-word;
+            border: 2px solid var(--text-main);
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .sender-name {
+            font-weight: bold;
+            font-size: 0.75em;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #999;
+            padding-bottom: 2px;
+        }
+
+        .message.self {
+            background-color: var(--text-main);
+            color: white;
+            margin-left: auto;
+            text-align: left;
+            border-color: var(--text-main);
+        }
+        .message.self .sender-name { color: var(--highlight); border-bottom-color: #555; }
+
+        .message.other { background-color: white; margin-right: auto; }
+        .message.other .sender-name { color: #666; }
+
+        .controls { display: flex; gap: 15px; align-items: center; }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 15px;
+            height: 50px;
+            border: 2px solid var(--text-main);
+            font-family: 'Space Mono', monospace;
+            background: white;
+            margin-bottom: 0;
+        }
+
+        #message-input:focus { background: #FFFFE0; box-shadow: 4px 4px 0 var(--highlight); }
+
+        .controls button {
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 80px;
+        }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <a href="/" class="logo">HobbySwap</a>
+    <a th:href="@{/}" class="logo">HobbySwap</a>
+    <div class="nav-links">
+        <div class="nav-right-group">
+            <div class="lang-dropdown">
+                <button class="lang-btn"><span>🌐 LANGUAGE ▼</span></button>
+                <div class="lang-content">
+                    <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+                    <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+                    <a th:href="@{?lang=ja}">日本語 [JP]</a>
+                </div>
+            </div>
+            <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-stack-vertical" style="justify-content: center;">
+                <a th:href="@{/login}" class="btn-login-main" style="width: 140px; text-align: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
+                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
+                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
+                </span>
+                <a th:href="@{/chat}" class="btn"
+                   style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; background:var(--highlight); color:black !important;"
+                   th:text="#{nav.chat}">
+                    💬 CHAT
+                </a>
+
+                <a th:href="@{/items/new}" class="btn"
+                   style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+                   th:text="#{nav.sell}">
+                   SELL
+                </a>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+                </form>
+            </span>
+        </div>
+    </div>
 </div>
 
 <div class="chat-container">
-    <h2>💬 大家來聊天</h2>
+    <div class="chat-header">
+        <h2 th:text="#{chat.title}">PUBLIC CHANNEL</h2>
+        <div class="online-status">
+            <span class="status-dot"></span>
+            <span th:text="#{chat.online}">ONLINE</span>
+        </div>
+    </div>
 
     <div id="chat-box">
         <div th:each="msg : ${history}"
              class="message"
              th:classappend="${msg.sender == #authentication.name} ? 'self' : 'other'">
-
             <span class="sender-name" th:text="${msg.sender}">User</span>
-
             <span th:text="${msg.content}">Hello</span>
         </div>
     </div>
 
     <div class="controls">
-        <input type="text" id="message-input" placeholder="輸入訊息..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()" class="btn">發送</button>
+        <input type="text" id="message-input" th:placeholder="#{chat.placeholder}" onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()" class="btn" style="height: 50px;" th:text="#{chat.send}">SEND</button>
     </div>
 </div>
+
+<script th:inline="javascript">
+    var currentUser = /*[[${#authentication.name}]]*/ 'Anonymous';
+</script>
 
 <script>
     var stompClient = null;
 
-    // 1. 連線到 WebSocket
     function connect() {
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-
-            // 訂閱公共頻道的訊息
             stompClient.subscribe('/topic/public', function (messageOutput) {
-                showMessage(JSON.parse(messageOutput.body));
+                var message = JSON.parse(messageOutput.body);
+                if (message.sender !== currentUser) {
+                    showMessage(message, false);
+                }
             });
         });
     }
 
-    // 2. 發送訊息
     function sendMessage() {
-        var messageContent = document.getElementById('message-input').value;
+        var input = document.getElementById('message-input');
+        var messageContent = input.value.trim();
+
         if(messageContent && stompClient) {
             var chatMessage = {
+                sender: currentUser,
                 content: messageContent,
                 type: 'CHAT'
             };
+            showMessage(chatMessage, true);
             stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-            document.getElementById('message-input').value = '';
+            input.value = '';
         }
     }
 
-    // 3. 顯示訊息在畫面上
-    function showMessage(message) {
+    function showMessage(message, isSelf) {
         var chatBox = document.getElementById('chat-box');
         var messageElement = document.createElement('div');
-
-        // 判斷是自己發的還是別人發的 (這裡簡單判斷，實際可根據 User ID)
         messageElement.classList.add('message');
-        messageElement.classList.add('other'); // 預設樣式
+
+        if (isSelf || message.sender === currentUser) {
+            messageElement.classList.add('self');
+        } else {
+            messageElement.classList.add('other');
+        }
 
         var contentHtml = '<span class="sender-name">' + message.sender + '</span>' +
             '<span>' + message.content + '</span>';
 
         messageElement.innerHTML = contentHtml;
         chatBox.appendChild(messageElement);
-        chatBox.scrollTop = chatBox.scrollHeight; // 自動捲動到底部
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // 按 Enter 發送
     function handleKeyPress(e) {
         if(e.key === 'Enter'){
             sendMessage();
         }
     }
 
-    // 頁面載入後自動連線
     connect();
 </script>
 

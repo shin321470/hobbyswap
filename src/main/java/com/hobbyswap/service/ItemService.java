@@ -38,4 +38,8 @@ public class ItemService {
         item.setStatus("SOLD"); // 簡單購買邏輯：將狀態改為已售出
         itemRepository.save(item);
     }
+
+    public void deleteItem(Long id) {
+        itemRepository.deleteById(id);
+    }
 }

@@ -553,7 +553,10 @@ input, textarea {
     outline: none;
     transition: 0.2s;
     border-radius: 0;
+}
 
+textarea {
+    width: 100%;
     resize: vertical;
     min-height: 120px;
 }

@@ -27,11 +27,7 @@
             font-size: 1.2rem;
             color: #888;
             position: relative;
-        }
-
-        .product-image-area::after {
-            content: 'NO IMAGE DATA';
-            font-family: 'Space Mono', monospace;
+            overflow: hidden;
         }
 
         .product-info-area {
@@ -112,7 +108,7 @@
 
     <div class="nav-links">
 
-        <div class="nav-right-group">
+        <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
 
             <div class="lang-dropdown">
                 <button class="lang-btn">
@@ -125,22 +121,29 @@
                 </div>
             </div>
 
-            <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-stack-vertical" style="justify-content: center;">
-                <a th:href="@{/login}" class="btn-login-main" style="width: 140px; text-align: center;" th:text="#{nav.login}">LOGIN</a>
-            </span>
+            <span th:if="${#authentication.principal != 'anonymousUser'}"
+                  style="display:flex; align-items:center; gap: 20px;">
 
-            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
-                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
-                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
-                </span>
+        <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
+             <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
+        </span>
 
-                <a th:href="@{/items/new}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem;" th:text="#{nav.sell}">SELL</a>
+        <a th:href="@{/chat}" class="btn"
+           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+           th:text="#{nav.chat}">
+            💬 CHAT
+        </a>
 
-                <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
-                </form>
-            </span>
+        <a th:href="@{/items/new}" class="btn"
+           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+           th:text="#{nav.sell}">
+           SELL
+        </a>
 
+        <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
+            <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+        </form>
+    </span>
         </div>
     </div>
 </div>
@@ -151,6 +154,13 @@
     <div class="product-layout">
 
         <div class="product-image-area">
+            <img th:if="${item.imageName != null}"
+                 th:src="@{'/uploads/' + ${item.imageName}}"
+                 style="width: 100%; height: 100%; object-fit: cover;">
+
+            <span th:if="${item.imageName == null}">
+                NO IMAGE DATA
+            </span>
         </div>
 
         <div class="product-info-area">
@@ -200,7 +210,7 @@
 
                 <div class="info-row" style="align-items: flex-start;">
                     <span class="info-label" th:text="#{item.desc}">描述</span>
-                    <span class="info-value" th:text="${item.description}">商品描述內容...</span>
+                    <span class="info-value" th:text="${item.description}" style="white-space: pre-wrap;">商品描述內容...</span>
                 </div>
             </div>
 
@@ -216,14 +226,56 @@
                 </div>
 
                 <div th:if="${#authentication.principal != 'anonymousUser'}">
-                    <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
-                        <button type="submit" class="btn" style="width: 100%; font-size: 1.2rem; padding: 15px;" th:text="#{item.buy}">BUY NOW</button>
-                    </form>
+
+                    <div th:if="${#authentication.name != item.seller.email}">
+                        <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
+                            <button type="submit" class="btn"
+                                    style="width: 100%; font-size: 1.2rem; padding: 15px;"
+                                    th:text="#{item.buy}">
+                                BUY NOW
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${#authentication.name == item.seller.email}"
+                         style="text-align: center; margin-top: 15px; padding: 10px; background: #eee; color: #666; border: 1px dashed #ccc;">
+
+            <span style="font-weight: bold;" th:text="#{item.self_buy_error}">
+                🚫 賣家無法購買自己的商品
+            </span>
+
+                    </div>
+
                 </div>
             </div>
 
             <div class="action-box" th:if="${item.status == 'SOLD'}" style="background: #f0f0f0; border-color: #ccc;">
                 <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
+            </div>
+
+            <div class="action-box"
+                 th:if="${#authentication.name == item.seller.email}"
+                 style="margin-top: 20px; border-color: #FF3333; background: #FFF0F0;">
+
+                <h4 style="margin-top: 0; color: #FF3333; text-decoration: underline;"
+                    th:text="#{item.manage.title}">
+                    MANAGE ITEM (賣家功能)
+                </h4>
+
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;"
+                   th:text="#{item.manage.desc}">
+                    您可以將此商品下架 (刪除)，此動作無法復原。
+                </p>
+
+                <form th:action="@{'/items/' + ${item.id} + '/delete'}" method="post"
+                      th:onsubmit="|return confirm('#{item.manage.confirm}');|">
+
+                    <button type="submit" class="btn"
+                            style="width: 100%; background: #FF3333; border-color: #FF3333; color: white !important;"
+                            th:text="#{item.manage.delete}">
+                        ❌ 下架商品 (DELETE)
+                    </button>
+                </form>
             </div>
 
         </div>
