@@ -7,6 +7,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import java.util.Locale;
 
@@ -33,5 +34,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 意思：網址打 /uploads/xxx.jpg -> 對應到本地資料夾 ./uploads/xxx.jpg
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:./uploads/");
     }
 }

@@ -17,6 +17,8 @@ public class Item {
 
     private Double price;
 
+    private String imageName;
+
     // 狀態: ON_SALE (上架中), SOLD (已售出)
     private String status = "ON_SALE";
 
@@ -42,4 +44,7 @@ public class Item {
     public void setUploadDate(LocalDateTime uploadDate) { this.uploadDate = uploadDate; }
     public User getSeller() { return seller; }
     public void setSeller(User seller) { this.seller = seller; }
+    public String getImageName() { return imageName; }
+    public void setImageName(String imageName) { this.imageName = imageName; }
+
 }

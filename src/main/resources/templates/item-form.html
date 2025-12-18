@@ -1,66 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="#{form.title}">刊登商品</title>
+    <title>刊登商品</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico?v=2}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
-
 <div class="navbar">
-    <a th:href="@{/}" class="logo">HobbySwap</a>
-
-    <div class="nav-links">
-        <div class="nav-right-group">
-            <div class="lang-dropdown">
-                <button class="lang-btn">
-                    [ LANGUAGE ▼ ]
-                </button>
-                <div class="lang-content">
-                    <a th:href="@{?lang=zh_TW}">繁體中文</a>
-                    <a th:href="@{?lang=en}">ENGLISH</a>
-                    <a th:href="@{?lang=ja}">日本語</a>
-                </div>
-            </div>
-
-            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
-                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
-                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
-                </span>
-
-                <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
-                </form>
-            </span>
-        </div>
-    </div>
+    <a href="/" class="logo">HobbySwap</a>
 </div>
+<div class="container">
+    <h1>刊登新商品</h1>
+    <form th:action="@{/items}" method="post" th:object="${item}" enctype="multipart/form-data">
+        <label>標題:</label>
+        <input type="text" th:field="*{title}" required>
 
-<div class="auth-container" style="max-width: 600px;">
+        <label>價格:</label>
+        <input type="number" th:field="*{price}" required>
 
-    <h2 th:text="#{form.title}">刊登新商品</h2>
+        <label>描述:</label>
+        <textarea th:field="*{description}" rows="4"></textarea>
 
-    <form th:action="@{/items}" method="post" th:object="${item}">
-        <label th:text="#{form.item_title}">標題:</label>
-        <input type="text" th:field="*{title}" required th:placeholder="#{form.item_title_ph}">
+        <label>商品圖片:</label>
+        <input type="file" name="imageFile" accept="image/*">
 
-        <label th:text="#{form.price}">價格:</label>
-        <input type="number" th:field="*{price}" required th:placeholder="#{form.price_ph}">
-
-        <label th:text="#{form.desc}">描述:</label>
-        <textarea th:field="*{description}" rows="6" th:placeholder="#{form.desc_ph}"></textarea>
-
-        <button type="submit" class="btn" style="width: 100%; font-size: 1.2rem;" th:text="#{form.submit}">確認刊登</button>
+        <button type="submit" class="btn">確認刊登</button>
     </form>
-
-    <div style="text-align: center; margin-top: 20px;">
-        <a th:href="@{/}" style="color: #666; text-decoration: none; border-bottom: 1px solid #999;" th:text="#{item.back}">回首頁</a>
-    </div>
-
 </div>
 
 <footer class="footer">
@@ -86,7 +51,7 @@
         </div>
 
         <div class="footer-col">
-            <h4 th:text="#{footer.contact}">CONTACT US</h4>
+            <h4>CONTACT US</h4>
             <div class="contact-info">
                 <p><strong>TEL:</strong> 02-1234-5678</p>
                 <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
@@ -95,7 +60,7 @@
         </div>
 
         <div class="footer-col">
-            <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+            <h4>FOLLOW US</h4>
             <div class="social-links">
                 <a href="#">[ IG ]</a>
                 <a href="#">[ FB ]</a>
@@ -116,6 +81,5 @@
         </div>
     </div>
 </footer>
-
 </body>
 </html>

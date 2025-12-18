@@ -55,16 +55,32 @@
 </div>
 
 <div class="container">
-    <h1 th:text="#{hero.subtitle}">最新上架商品</h1> <div class="item-grid">
-    <div th:each="item : ${items}" class="card">
-        <h3 th:text="${item.title}">標題</h3>
-        <p class="price">
-            <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
-        </p>
-        <p>
-            <span th:text="#{item.seller}">賣家</span>: <span th:text="${item.seller.name}">名字</span>
-        </p>
-        <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.buy} + ' ->'">查看詳情 -></a>
+    <div class="item-grid">
+        <div th:each="item : ${items}" class="card">
+
+            <div style="width: 100%; height: 200px; background: #f0f0f0; margin-bottom: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+
+                <img th:if="${item.imageName != null}"
+                     th:src="@{'/uploads/' + ${item.imageName}}"
+                     style="width: 100%; height: 100%; object-fit: cover;">
+
+                <span th:if="${item.imageName == null}" style="color: #aaa; font-size: 0.9em;">
+                No Image
+            </span>
+
+            </div>
+            <h3 th:text="${item.title}" style="margin-bottom: 5px;">標題</h3>
+
+            <p class="price" style="color: var(--highlight); font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
+                <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
+            </p>
+
+            <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">
+                <span th:text="#{item.seller}">賣家</span>: <span th:text="${item.seller.name}">名字</span>
+            </p>
+
+            <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.buy} + ' ->'">查看詳情 -></a>
+        </div>
     </div>
 </div>
 </div>
