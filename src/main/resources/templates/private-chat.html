@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>私訊中心</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        .chat-layout { display: flex; max-width: 1000px; margin: 20px auto; height: 500px; border: 1px solid #ddd; background: white; }
+        .user-list { width: 30%; border-right: 1px solid #ddd; overflow-y: auto; background: #f8f9fa; }
+        .user-item { padding: 15px; border-bottom: 1px solid #eee; display: block; color: #333; text-decoration: none; }
+        .user-item:hover, .user-item.active { background: #e3f2fd; }
+        .chat-area { width: 70%; display: flex; flex-direction: column; }
+        .chat-header { padding: 15px; border-bottom: 1px solid #ddd; font-weight: bold; background: #f1f1f1; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 20px; background: #fff; }
+        .chat-input { padding: 15px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        .message { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 70%; }
+        .message.self { background: #007bff; color: white; align-self: flex-end; margin-left: auto; }
+        .message.other { background: #f1f0f0; color: black; align-self: flex-start; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="/" class="logo">HobbySwap</a>
+</div>
+
+<div class="chat-layout">
+    <div class="user-list">
+        <h3 style="padding: 10px; margin: 0; text-align: center;">聯絡人</h3>
+        <a th:each="u : ${users}"
+           th:href="@{/private-chat(recipient=${u.email})}"
+           class="user-item"
+           th:classappend="${currentRecipient == u.email} ? 'active'">
+            <span th:text="${u.name}">User Name</span>
+            <br><small th:text="${u.email}" style="color:#666;"></small>
+        </a>
+    </div>
+
+    <div class="chat-area">
+        <div th:if="${currentRecipient != null}" style="display:flex; flex-direction:column; height:100%;">
+            <div class="chat-header">
+                正在與 <span th:text="${currentRecipient}" style="color:blue;"></span> 聊天
+            </div>
+
+            <div id="chat-box" class="chat-messages">
+                <div th:each="msg : ${history}"
+                     class="message"
+                     th:classappend="${msg.sender == currentUser} ? 'self' : 'other'">
+                    <span th:text="${msg.content}">msg</span>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="msg-input" placeholder="輸入訊息..." style="flex-grow:1; padding:8px;">
+                <button onclick="sendPrivate()" class="btn">發送</button>
+            </div>
+        </div>
+
+        <div th:if="${currentRecipient == null}" style="display:flex; align-items:center; justify-content:center; height:100%; color:#999;">
+            請從左側選擇一位使用者開始聊天
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    var stompClient = null;
+    var currentUser = /*[[${currentUser}]]*/ 'me';
+    var currentRecipient = /*[[${currentRecipient}]]*/ null;
+
+    function connect() {
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // 訂閱「私人信箱」: /user/queue/private
+            stompClient.subscribe('/user/queue/private', function (payload) {
+                var message = JSON.parse(payload.body);
+                showPrivateMessage(message);
+            });
+        });
+    }
+
+    function sendPrivate() {
+        var input = document.getElementById('msg-input');
+        var content = input.value.trim();
+
+        if(content && stompClient && currentRecipient) {
+            var chatMessage = {
+                content: content,
+                type: 'CHAT',
+                recipient: currentRecipient // 設定收件人
+            };
+            stompClient.send("/app/chat.sendPrivate", {}, JSON.stringify(chatMessage));
+            input.value = '';
+        }
+    }
+
+    function showPrivateMessage(message) {
+        // 過濾機制：只顯示「目前聊天對象」傳來的，或「我自己」傳給他的
+        // 防止：我在跟 A 聊天，結果 B 傳訊息來，卻顯示在 A 的視窗裡
+        if (message.sender === currentRecipient || message.recipient === currentRecipient) {
+            var chatBox = document.getElementById('chat-box');
+            var div = document.createElement('div');
+            div.classList.add('message');
+            div.classList.add(message.sender === currentUser ? 'self' : 'other');
+            div.innerText = message.content;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } else {
+            // (進階) 這裡可以做「未讀紅點」提示，目前先用 console 提示
+            console.log("收到來自 " + message.sender + " 的新訊息");
+        }
+    }
+
+    // 自動捲動到底部
+    window.onload = function() {
+        var chatBox = document.getElementById('chat-box');
+        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+        connect();
+    };
+</script>
+
+</body>
+</html>

@@ -17,7 +17,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 設定哪些頁面是公開的 (首頁、登入頁、註冊頁、CSS樣式、圖片、H2控制台)
-                        .requestMatchers("/", "/register", "/login", "/css/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/", "/register", "/login", "/css/**", "/images/**", "/h2-console/**", "/uploads/**").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
                         // 其他所有頁面都需要登入才能存取 (例如刊登商品、購買商品)
                         .anyRequest().authenticated()

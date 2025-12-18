@@ -1,5 +1,7 @@
 package com.hobbyswap.service;
 
+import java.util.List;
+import com.hobbyswap.model.User;
 import com.hobbyswap.model.User;
 import com.hobbyswap.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,10 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
+    }
 
     // 1. 註冊功能：將使用者密碼加密後存入資料庫
     public void register(User user) {

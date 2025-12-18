@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>公共聊天室</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <style>
+        .chat-container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #chat-box { height: 400px; border: 1px solid #ddd; overflow-y: scroll; padding: 10px; margin-bottom: 20px; background: #f9f9f9; }
+        .message { margin-bottom: 10px; padding: 8px; border-radius: 4px; }
+        .message.self { background-color: #e3f2fd; text-align: right; }
+        .message.other { background-color: #fff; border: 1px solid #eee; }
+        .sender-name { font-weight: bold; font-size: 0.8em; color: #666; display: block; }
+        .controls { display: flex; gap: 10px; }
+        #message-input { flex-grow: 1; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="/" class="logo">HobbySwap</a>
+</div>
+
+<div class="chat-container">
+    <h2>💬 大家來聊天</h2>
+
+    <div id="chat-box">
+        <div th:each="msg : ${history}"
+             class="message"
+             th:classappend="${msg.sender == #authentication.name} ? 'self' : 'other'">
+
+            <span class="sender-name" th:text="${msg.sender}">User</span>
+
+            <span th:text="${msg.content}">Hello</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="message-input" placeholder="輸入訊息..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()" class="btn">發送</button>
+    </div>
+</div>
+
+<script>
+    var stompClient = null;
+
+    // 1. 連線到 WebSocket
+    function connect() {
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // 訂閱公共頻道的訊息
+            stompClient.subscribe('/topic/public', function (messageOutput) {
+                showMessage(JSON.parse(messageOutput.body));
+            });
+        });
+    }
+
+    // 2. 發送訊息
+    function sendMessage() {
+        var messageContent = document.getElementById('message-input').value;
+        if(messageContent && stompClient) {
+            var chatMessage = {
+                content: messageContent,
+                type: 'CHAT'
+            };
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+            document.getElementById('message-input').value = '';
+        }
+    }
+
+    // 3. 顯示訊息在畫面上
+    function showMessage(message) {
+        var chatBox = document.getElementById('chat-box');
+        var messageElement = document.createElement('div');
+
+        // 判斷是自己發的還是別人發的 (這裡簡單判斷，實際可根據 User ID)
+        messageElement.classList.add('message');
+        messageElement.classList.add('other'); // 預設樣式
+
+        var contentHtml = '<span class="sender-name">' + message.sender + '</span>' +
+            '<span>' + message.content + '</span>';
+
+        messageElement.innerHTML = contentHtml;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight; // 自動捲動到底部
+    }
+
+    // 按 Enter 發送
+    function handleKeyPress(e) {
+        if(e.key === 'Enter'){
+            sendMessage();
+        }
+    }
+
+    // 頁面載入後自動連線
+    connect();
+</script>
+
+</body>
+</html>
