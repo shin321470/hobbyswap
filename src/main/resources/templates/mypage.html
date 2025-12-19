@@ -96,7 +96,7 @@
 
       <div class="item-grid">
         <th:block th:each="item : ${user.items}">
-          <div class="my-item-card" th:if="${item.status == 'ON_SALE'}">
+          <div class="my-item-card" th:if="${item.status == 'ON_SALE' and item.status != 'DELETED'} ">
             <div class="item-img-container">
               <img th:if="${item.imageName != null and item.imageName != ''}"
                    th:src="@{'/uploads/' + ${item.imageName}}" alt="Item Image">
@@ -132,7 +132,7 @@
     <div id="tab-sold" class="tab-content" style="display: none;">
       <div class="item-grid">
         <th:block th:each="item : ${user.items}">
-          <div class="my-item-card" th:if="${item.status == 'SOLD'}">
+          <div class="my-item-card" th:if="${item.status == 'SOLD' and item.status != 'DELETED' }">
 
             <div class="item-img-container">
               <img th:if="${item.imageName != null and item.imageName != ''}" th:src="@{'/uploads/' + ${item.imageName}}" alt="Sold Item Image">
