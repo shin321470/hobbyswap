@@ -211,7 +211,10 @@
 
                 <div class="info-row">
                     <span class="info-label" th:text="#{item.date}">上架時間</span>
-                    <span class="info-value" th:text="${item.uploadDate}">2023-01-01</span>
+                    <span class="info-value"
+                          th:text="${#temporals.format(item.uploadDate, 'yyyy-MM-dd')}">
+            2023-01-01
+        </span>
                 </div>
 
                 <div class="info-row" style="align-items: flex-start;">
