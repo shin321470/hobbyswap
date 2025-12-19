@@ -15,7 +15,6 @@
     <a th:href="@{/}" class="logo">HobbySwap</a>
 
     <div class="nav-links">
-
         <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
 
             <div class="lang-dropdown">
@@ -29,46 +28,27 @@
                 </div>
             </div>
 
-            <span th:if="${#authentication.principal != 'anonymousUser'}"
-                  style="display:flex; align-items:center; gap: 20px;">
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <div class="lang-dropdown">
+                    <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+                      <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+                      <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+                    </button>
+                    <div class="lang-content">
+                        <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                        <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                        <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                        <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+                    </div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
+                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+                </form>
+            </span>
 
-        <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
-             <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
-        </span>
-
-        <a th:href="@{/private-chat}" class="btn"
-           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
-           th:text="#{nav.private_chat}">
-            Private Chat
-        </a>
-
-        <a th:href="@{/chat}" class="btn"
-           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
-           th:text="#{nav.chat}">
-            CHAT
-        </a>
-
-        <a th:href="@{/items/new}" class="btn"
-           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
-           th:text="#{nav.sell}">
-           SELL
-        </a>
-
-        <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
-            <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
-        </form>
-    </span>
-
-            <span th:if="${#authentication.principal == 'anonymousUser'}"
-                  style="display:flex; align-items:center; gap: 20px;">
-
-        <a th:href="@{/login}" class="btn"
-           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
-           th:text="#{nav.login}">
-            LOGIN
-        </a>
-    </span>
-
+            <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
         </div>
     </div>
 </div>
@@ -83,31 +63,33 @@
     <div class="item-grid">
         <div th:each="item : ${items}" class="card">
 
-            <div style="width: 100%; height: 200px; background: #f0f0f0; margin-bottom: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
-
+            <a th:href="@{'/items/' + ${item.id}}" class="item-img-container">
                 <img th:if="${item.imageName != null}"
                      th:src="@{'/uploads/' + ${item.imageName}}"
-                     style="width: 100%; height: 100%; object-fit: cover;">
+                     alt="Item Image">
 
-                <span th:if="${item.imageName == null}" style="color: #aaa; font-size: 0.9em;">
-                No Image
-            </span>
+                <span th:if="${item.imageName == null}"
+                      style="color: #ccc; font-weight: bold; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: #f8f8f8;">
+                    NO IMAGE
+                </span>
+            </a>
 
+            <div class="card-content">
+                <h3 th:text="${item.title}">標題</h3>
+
+                <div class="price">
+                    <span th:text="#{item.price}">PRICE</span>: $ <span th:text="${item.price}">100</span>
+                </div>
+
+                <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">
+                    <span th:text="#{item.seller}">SELLER</span>: <span th:text="${item.seller.name}">Name</span>
+                </p>
+
+                <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.buy}">VIEW DETAILS -></a>
             </div>
-            <h3 th:text="${item.title}" style="margin-bottom: 5px;">標題</h3>
 
-            <p class="price" style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
-                <span th:text="#{item.price}">價格</span>: $ <span th:text="${item.price}">100</span>
-            </p>
-
-            <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">
-                <span th:text="#{item.seller}">賣家</span>: <span th:text="${item.seller.name}">名字</span>
-            </p>
-
-            <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.buy} + ' ->'">查看詳情 -></a>
         </div>
     </div>
-</div>
 </div>
 
 <footer class="footer">
@@ -152,11 +134,9 @@
     </div>
 
     <div class="copyright">
-
         <div>
             &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
         </div>
-
         <div class="payment-icons">
             <span>VISA</span>
             <span>MASTER</span>

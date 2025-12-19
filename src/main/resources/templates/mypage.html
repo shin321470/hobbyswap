@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>My Page</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="navbar">
+  <a th:href="@{/}" class="logo">HobbySwap</a>
+
+  <div class="nav-links">
+    <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+      <div class="lang-dropdown">
+        <button class="lang-btn">
+          <span>🌐 LANGUAGE ▼</span>
+        </button>
+        <div class="lang-content">
+          <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+          <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+          <a th:href="@{?lang=ja}">日本語 [JP]</a>
+        </div>
+      </div>
+
+      <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+        <div class="lang-dropdown">
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+            </div>
+        </div>
+        <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
+            <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+        </form>
+      </span>
+
+      <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+        <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <div class="profile-card">
+    <div class="profile-header-bg" th:text="#{mypage.header}">USER CARD</div>
+    <div class="profile-avatar">
+      <span th:text="${user.name != null ? #strings.substring(user.name, 0, 1).toUpperCase() : 'U'}">U</span>
+    </div>
+    <div class="profile-info">
+      <h2 style="margin: 0;" th:text="${user.name}">UserName</h2>
+      <p style="color: #666; font-size: 0.9rem;" th:text="${user.email}">user@email.com</p>
+      <div style="margin-top: 15px;">
+        <button class="btn" style="width: 100%; font-size: 0.8rem;" th:text="#{mypage.edit}">EDIT PROFILE</button>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat-box">
+        <strong th:text="${itemCount}">0</strong>
+        <span th:text="#{mypage.stat.items}">Items</span>
+      </div>
+      <div class="stat-box">
+        <strong>0</strong>
+        <span th:text="#{mypage.stat.sold}">Sold</span>
+      </div>
+      <div class="stat-box">
+        <strong>5.0</strong>
+        <span th:text="#{mypage.stat.rating}">Rating</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-panel">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('selling')" th:text="#{mypage.tab.selling}">SELLING</button>
+      <button class="tab-btn" onclick="switchTab('sold')" th:text="#{mypage.tab.sold}">SOLD</button>
+      <button class="tab-btn" th:text="#{mypage.tab.fav}">FAVORITES</button>
+    </div>
+
+    <div id="tab-selling" class="tab-content">
+      <div th:if="${user.items.isEmpty()}" class="empty-state">
+        <h3 th:text="#{mypage.empty.title}">NOTHING HERE YET</h3>
+        <p th:text="#{mypage.empty.desc}">You haven't listed any items yet.</p>
+        <a th:href="@{/items/new}" class="btn" style="background: var(--highlight); color: black;" th:text="#{mypage.empty.btn}">START SELLING</a>
+      </div>
+
+      <div class="item-grid">
+        <th:block th:each="item : ${user.items}">
+          <div class="my-item-card" th:if="${item.status == 'ON_SALE'}">
+            <div class="item-img-container">
+              <img th:if="${item.imageName != null and item.imageName != ''}"
+                   th:src="@{'/uploads/' + ${item.imageName}}" alt="Item Image">
+              <span th:if="${item.imageName == null or item.imageName == ''}"
+                    style="color:#ccc; font-weight:bold;">NO IMAGE</span>
+            </div>
+
+            <div class="item-info-box">
+              <h4 th:text="${item.title}">Item Name</h4>
+              <div class="item-status-badge" style="background: #e3f2fd; color: #0d47a1;" th:text="#{mypage.label.onsale}">ON SALE</div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <span style="font-weight: bold; font-size: 1.1rem;" th:text="'$' + ${item.price}">$100</span>
+                <span style="font-size: 0.7rem; color: #888;"
+                      th:text="${item.uploadDate != null ? #temporals.format(item.uploadDate, 'yyyy-MM-dd') : 'N/A'}">
+                      Date
+                </span>
+              </div>
+
+              <div>
+                <a th:href="@{/items/edit/{id}(id=${item.id})}" class="btn" th:text="#{mypage.btn.edit}">EDIT</a>
+                <form th:action="@{/items/delete/{id}(id=${item.id})}" method="post"
+                      th:onsubmit="|return confirm('#{item.manage.confirm}');|">
+                  <button type="submit" class="btn" style="background: #ff4444; color: white;" th:text="#{mypage.btn.delete}">DELETE</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </th:block>
+      </div>
+    </div>
+
+    <div id="tab-sold" class="tab-content" style="display: none;">
+      <div class="item-grid">
+        <th:block th:each="item : ${user.items}">
+          <div class="my-item-card" th:if="${item.status == 'SOLD'}">
+
+            <div class="item-img-container">
+              <img th:if="${item.imageName != null and item.imageName != ''}" th:src="@{'/uploads/' + ${item.imageName}}" alt="Sold Item Image">
+              <div style="position: absolute; background: red; color: white; padding: 5px 10px; font-weight: bold; transform: rotate(-15deg);" th:text="#{mypage.label.soldout}">SOLD OUT</div>
+            </div>
+
+            <div class="item-info-box">
+              <h4 style="color: #666;" th:text="${item.title}">Item Name</h4>
+              <div class="item-status-badge" style="background: #eee; color: #666;" th:text="#{mypage.label.sold}">SOLD</div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <span style="font-weight: bold; color: #999;" th:text="'$' + ${item.price}">$100</span>
+                <span style="font-size: 0.7rem; color: #888;"
+                      th:text="${item.uploadDate != null ? #temporals.format(item.uploadDate, 'yyyy-MM-dd') : 'N/A'}">
+                      Date
+                </span>
+              </div>
+
+              <div>
+                <button class="btn" style="width: 100%; cursor: not-allowed; background: #ddd; color: #666; border: 2px solid black; opacity: 1;" disabled th:text="#{mypage.btn.completed}">COMPLETED</button>
+              </div>
+            </div>
+          </div>
+        </th:block>
+      </div>
+      <div id="no-sold-msg" style="padding: 40px; text-align: center; color: #888; display: none;" th:text="#{mypage.msg.nosold}">
+        NO SOLD ITEMS
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4 th:text="#{footer.company}">COMPANY</h4>
+      <ul class="footer-links">
+        <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+        <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+        <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+        <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 th:text="#{footer.service}">SERVICE</h4>
+      <ul class="footer-links">
+        <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+        <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+        <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+        <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 th:text="#{footer.contact}">CONTACT US</h4>
+      <div class="contact-info">
+        <p><strong>TEL:</strong> 02-9487-5566</p>
+        <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+        <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+      <div class="social-links">
+        <a href="#">[ IG ]</a>
+        <a href="#">[ FB ]</a>
+        <a href="#">[ YT ]</a>
+      </div>
+    </div>
+  </div>
+  <div class="copyright">
+    <div>&copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span></div>
+    <div class="payment-icons"><span>VISA</span><span>MASTER</span><span>JCB</span><span>APPLE PAY</span></div>
+  </div>
+</footer>
+
+<script>
+  function switchTab(tabName) {
+      document.getElementById('tab-selling').style.display = 'none';
+      document.getElementById('tab-sold').style.display = 'none';
+      var btns = document.querySelectorAll('.tab-btn');
+      btns.forEach(function(btn) { btn.classList.remove('active'); });
+      document.getElementById('tab-' + tabName).style.display = 'block';
+      event.currentTarget.classList.add('active');
+  }
+</script>
+</body>
+</html>

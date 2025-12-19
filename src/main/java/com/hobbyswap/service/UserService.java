@@ -40,8 +40,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("找不到使用者: " + email));
 
         // 回傳 Spring Security 需要的使用者物件
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPassword(), Collections.emptyList());
+        return user;
     }
 
     // 3. [重要] 這就是您之前報錯缺少的程式碼！
