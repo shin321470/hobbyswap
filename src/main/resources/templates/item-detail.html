@@ -128,10 +128,16 @@
              <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
         </span>
 
+        <a th:href="@{/private-chat}" class="btn"
+           style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
+           th:text="#{nav.private_chat}">
+           Private Chat
+        </a>
+
         <a th:href="@{/chat}" class="btn"
            style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
            th:text="#{nav.chat}">
-            💬 CHAT
+           CHAT
         </a>
 
         <a th:href="@{/items/new}" class="btn"
