@@ -128,45 +128,47 @@
 
 <div class="navbar">
     <a th:href="@{/}" class="logo">HobbySwap</a>
+
     <div class="nav-links">
-        <div class="nav-right-group">
+        <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+
             <div class="lang-dropdown">
-                <button class="lang-btn"><span>🌐 LANGUAGE ▼</span></button>
+                <button class="lang-btn">
+                    <span>🌐 LANGUAGE ▼</span>
+                </button>
                 <div class="lang-content">
                     <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
                     <a th:href="@{?lang=en}">ENGLISH [EN]</a>
                     <a th:href="@{?lang=ja}">日本語 [JP]</a>
                 </div>
             </div>
-            <span th:if="${#authentication.principal == 'anonymousUser'}" class="auth-stack-vertical" style="justify-content: center;">
-                <a th:href="@{/login}" class="btn-login-main" style="width: 140px; text-align: center;" th:text="#{nav.login}">LOGIN</a>
-            </span>
-            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap:15px;">
-                <span style="font-family:'Space Mono'; font-weight:bold; font-size: 0.9rem;">
-                     <span th:text="${#authentication.name}" style="background:var(--highlight); padding:2px 5px; color:black;">User</span>
-                </span>
 
-                <a th:href="@{/private-chat}" class="btn"
-                   style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
-                   th:text="#{nav.private_chat}">
-                   Private Chat
-                </a>
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
 
-                <a th:href="@{/chat}" class="btn"
-                   style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; background:var(--highlight); color:black !important;"
-                   th:text="#{nav.chat}">
-                   CHAT
-                </a>
+        <div class="lang-dropdown">
 
-                <a th:href="@{/items/new}" class="btn"
-                   style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;"
-                   th:text="#{nav.sell}">
-                   SELL
-                </a>
-                <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
-                </form>
-            </span>
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+            </div>
+        </div>
+        <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
+            <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+        </form>
+      </span>
+
+            <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+        <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+      </span>
+
         </div>
     </div>
 </div>
