@@ -45,7 +45,6 @@ public class ItemController {
         return "item-form";
     }
 
-    // ▼▼▼ 請檢查這裡！只保留這一個「新的」方法，舊的請刪除 ▼▼▼
     @PostMapping("/items")
     public String createItem(@ModelAttribute Item item,
                              @RequestParam("imageFile") MultipartFile file, // 接收圖片
@@ -69,7 +68,6 @@ public class ItemController {
 
         return "redirect:/";
     }
-    // ▲▲▲ 結束 ▲▲▲
 
     // 購買
     @PostMapping("/items/{id}/buy")
@@ -80,11 +78,20 @@ public class ItemController {
 
     @PostMapping("/items/delete/{id}")
     public String deleteItem(@PathVariable Long id, Principal principal) {
-
         Item item = itemService.findById(id);
+
+        System.out.println("=== 嘗試刪除商品 ===");
+        System.out.println("商品 ID: " + id);
+        System.out.println("登入者 (Principal): " + principal.getName());
+        System.out.println("賣家 (Seller Email): " + item.getSeller().getEmail());
+
         if (item != null && item.getSeller().getEmail().equals(principal.getName())) {
             itemService.deleteItem(id);
+            System.out.println(">>> 刪除成功！");
+        } else {
+            System.out.println(">>> 刪除失敗：權限不符或商品不存在");
         }
+
         return "redirect:/mypage";
     }
 }

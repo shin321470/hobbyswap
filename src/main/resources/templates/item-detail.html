@@ -258,31 +258,6 @@
                 <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
             </div>
 
-            <div class="action-box"
-                 th:if="${#authentication.name == item.seller.email}"
-                 style="margin-top: 20px; border-color: #FF3333; background: #FFF0F0;">
-
-                <h4 style="margin-top: 0; color: #FF3333; text-decoration: underline;"
-                    th:text="#{item.manage.title}">
-                    MANAGE ITEM (賣家功能)
-                </h4>
-
-                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;"
-                   th:text="#{item.manage.desc}">
-                    您可以將此商品下架 (刪除)，此動作無法復原。
-                </p>
-
-                <form th:action="@{'/items/' + ${item.id} + '/delete'}" method="post"
-                      th:onsubmit="|return confirm('#{item.manage.confirm}');|">
-
-                    <button type="submit" class="btn"
-                            style="width: 100%; background: #FF3333; border-color: #FF3333; color: white !important;"
-                            th:text="#{item.manage.delete}">
-                        ❌ 下架商品 (DELETE)
-                    </button>
-                </form>
-            </div>
-
         </div>
     </div>
 </div>
