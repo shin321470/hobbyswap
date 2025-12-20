@@ -180,6 +180,20 @@
             <div style="margin-top: 10px; font-weight: bold; color: #666; font-family: 'Space Mono', monospace;">
                 <span th:text="#{item.stock_quantity}">STOCK:</span>
                 <span th:text="${item.stockQuantity}">1</span>
+
+                <span style="margin-left: 20px;">CATEGORY:</span>
+
+                <span th:switch="${item.category}"
+                      style="color: var(--highlight); background: black; padding: 2px 6px; border-radius: 2px;">
+
+                    <span th:case="'CLOTHING'">服飾</span>
+                    <span th:case="'BOOKS'">書籍</span>
+                    <span th:case="'TOYS'">玩具</span>
+                    <span th:case="'ELECTRONICS'">3C 電子</span>
+                    <span th:case="'OTHERS'">其他</span>
+
+                    <span th:case="*">未分類</span>
+                </span>
             </div>
 
             <hr class="divider">

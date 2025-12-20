@@ -53,6 +53,11 @@ public class ItemService {
         }
     }
 
+    // 儲存商品變更 (用於強制下架)
+    public void save(Item item) {
+        itemRepository.save(item);
+    }
+
     public void deleteItem(Long id) {
         Item item = findById(id);
         item.setStatus("DELETED");

@@ -63,11 +63,20 @@
 
     <form th:action="@{/items}" method="post" th:object="${item}" enctype="multipart/form-data">
 
-        <label th:text="#{form.item_title}">標題:</label>
-        <input type="text" th:field="*{title}" required th:placeholder="#{form.item_title_ph}">
+        <label>標題:</label>
+        <input type="text" th:field="*{title}" required>
 
-        <label th:text="#{form.price}">價格:</label>
-        <input type="number" th:field="*{price}" required th:placeholder="#{form.price_ph}">
+        <label>商品分類:</label>
+        <select th:field="*{category}" required style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid black; font-family: 'Space Mono', monospace;">
+            <option value="" disabled selected>-- 請選擇分類 --</option>
+            <option value="CLOTHING">服飾 (Clothing)</option>
+            <option value="BOOKS">書籍 (Books)</option>
+            <option value="TOYS">玩具 (Toys)</option>
+            <option value="ELECTRONICS">3C 電子 (Electronics)</option>
+            <option value="OTHERS">其他 (Others)</option>
+        </select>
+        <label>價格:</label>
+        <input type="number" th:field="*{price}" required>
 
         <div style="margin-bottom: 25px;">
             <label for="stockQuantity" th:text="#{item.stock_quantity}">QUANTITY (庫存)</label>

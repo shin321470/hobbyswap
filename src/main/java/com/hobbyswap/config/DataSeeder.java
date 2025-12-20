@@ -4,6 +4,7 @@ import com.hobbyswap.model.Item;
 import com.hobbyswap.model.User;
 import com.hobbyswap.repository.ItemRepository;
 import com.hobbyswap.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +13,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 
 @Configuration
-public class DataSeeder {
+public class DataSeeder implements CommandLineRunner {
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Override
+    public void run(String... args) throws Exception {
+        System.out.println("🔥 DataSeeder 正在執行中...");
 
+        // 檢查是否已有管理員帳號，沒有才建立
+        if (userRepository.findByEmail("admin@hobbyswap.com").isEmpty()) {
+            User admin = new User();
+            admin.setName("Super Admin");
+            admin.setEmail("admin@hobbyswap.com");
+            admin.setPassword(passwordEncoder.encode("admin123")); // 設定密碼
+            admin.setRole("ROLE_ADMIN"); // 關鍵：設定為管理員權限
+            admin.setEnabled(true);      // 啟用帳號
+
+            userRepository.save(admin);
+            System.out.println("✅ 管理員帳號已建立: admin@hobbyswap.com / admin123");
+        }
+    }
     @Bean
     public CommandLineRunner demoData(UserRepository userRepo, ItemRepository itemRepo, PasswordEncoder encoder) {
         return args -> {
@@ -37,6 +56,17 @@ public class DataSeeder {
                     bob.setName("Bob");
                     bob.setPassword(encoder.encode("password"));
                     userRepo.save(bob);
+                }
+
+                if (userRepository.findByEmail("admin@hobbyswap.com").isEmpty()) {
+                    User admin = new User();
+                    admin.setName("Super Admin");
+                    admin.setEmail("admin@hobbyswap.com");
+                    admin.setPassword(passwordEncoder.encode("admin123")); // 設定密碼
+                    admin.setRole("ROLE_ADMIN"); // 關鍵：設定為管理員
+                    admin.setEnabled(true);
+                    userRepository.save(admin);
+                    System.out.println("✅ 管理員帳號已建立: admin@hobbyswap.com / admin123");
                 }
 
                 // 檢查商品是否為空，如果是空的就塞入商品

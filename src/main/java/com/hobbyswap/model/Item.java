@@ -26,6 +26,8 @@ public class Item {
 
     private LocalDateTime uploadDate;
 
+    private String category;
+
     // 與使用者的多對一關聯 (賣家)
     @ManyToOne
     @JoinColumn(name = "seller_id")
@@ -50,4 +52,6 @@ public class Item {
     public void setImageName(String imageName) { this.imageName = imageName; }
     public Integer getStockQuantity() { return stockQuantity;}
     public void setStockQuantity(Integer stockQuantity) {this.stockQuantity = stockQuantity;}
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }

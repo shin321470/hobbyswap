@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>管理員後台</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .admin-container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #eee; }
+        .btn-danger { background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        .btn-success { background: green; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="/static" class="logo">HobbySwap ADMIN</a>
+    <div class="nav-links">
+        <a href="/static" class="btn">回到首頁</a>
+        <form th:action="@{/admin/logout}" method="post" style="display:inline;">
+            <button class="btn-logout">登出</button>
+        </form>
+    </div>
+</div>
+
+<div class="admin-container">
+    <h1>📊 管理後台</h1>
+
+    <h2>👤 使用者管理</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>姓名</th>
+            <th>狀態</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}">1</td>
+            <td th:text="${user.email}">test@test.com</td>
+            <td th:text="${user.name}">Name</td>
+            <td>
+                <span th:if="${user.enabled}" style="color:green;">正常</span>
+                <span th:unless="${user.enabled}" style="color:red;">已封鎖</span>
+            </td>
+            <td>
+                <span th:if="${user.role == 'ROLE_ADMIN'}" style="color: #999;">
+                    (管理員)
+                </span>
+
+                <div th:if="${user.role != 'ROLE_ADMIN'}">
+
+                    <form th:if="${user.enabled}"
+                          th:action="@{'/admin/users/' + ${user.id} + '/toggle-ban'}" method="post">
+                        <button type="submit" class="btn-danger" onclick="return confirm('確定要封鎖此使用者嗎？');">
+                            封鎖帳號
+                        </button>
+                    </form>
+
+                    <div th:if="${!user.enabled}" style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: red; font-weight: bold;">🚫 已封鎖</span>
+
+                        <form th:action="@{'/admin/users/' + ${user.id} + '/toggle-ban'}" method="post">
+                            <button type="submit" class="btn-success" style="background-color: #28a745;">
+                                解除封鎖
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>📦 商品管理</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>圖片</th>
+            <th>標題</th>
+            <th>賣家</th>
+            <th>狀態</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td th:text="${item.id}">1</td>
+            <td>
+                <img th:if="${item.imageName != null}" th:src="@{'/uploads/' + ${item.imageName}}" width="50">
+            </td>
+            <td th:text="${item.title}">Guitar</td>
+            <td th:text="${item.seller.name}">Seller</td>
+            <td th:text="${item.status}">ON_SALE</td>
+            <td>
+                <form th:if="${item.status != 'BANNED'}"
+                      th:action="@{'/admin/items/' + ${item.id} + '/delete'}" method="post">
+                    <button type="submit" class="btn-danger" onclick="return confirm('確定要強制下架嗎？');">
+                        強制下架
+                    </button>
+                </form>
+                <span th:if="${item.status == 'BANNED'}" style="color:red; font-weight:bold;">已下架</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

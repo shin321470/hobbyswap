@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>HobbySwap Admin Console</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        body { background-color: #2c3e50; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .admin-login-box { background: white; padding: 40px; width: 100%; max-width: 400px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .admin-title { text-align: center; color: #c0392b; font-family: 'Archivo Black', sans-serif; text-transform: uppercase; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; border: 2px solid #ddd; box-sizing: border-box; }
+        .btn-admin { width: 100%; background: #c0392b; color: white; padding: 12px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-admin:hover { background: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="admin-login-box">
+    <h2 class="admin-title">Admin Console</h2>
+
+    <div th:if="${param.error}" style="background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; text-align: center; border-radius: 4px;">
+        帳號或密碼錯誤，或無管理權限
+    </div>
+
+    <div th:if="${param.logout}" style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; text-align: center; border-radius: 4px;">
+        已安全登出
+    </div>
+
+    <form th:action="@{/admin/login}" method="post">
+        <div class="form-group">
+            <label>ADMIN ID</label>
+            <input type="text" name="username" placeholder="admin@hobbyswap.com" required>
+        </div>
+        <div class="form-group">
+            <label>PASSWORD</label>
+            <input type="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-admin">ENTER SYSTEM</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="/" style="color: #666; text-decoration: none; font-size: 0.9rem;">← 回到前台首頁</a>
+    </div>
+</div>
+
+</body>
+</html>

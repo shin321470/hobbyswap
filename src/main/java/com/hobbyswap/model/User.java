@@ -2,6 +2,7 @@ package com.hobbyswap.model;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -29,6 +30,15 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Item> items;
 
+    private String role;      // 存 "ROLE_USER" 或 "ROLE_ADMIN"
+    private boolean enabled;  // true=正常, false=被封鎖
+
+    public User() {
+        this.role = "ROLE_USER"; // 預設是一般人
+        this.enabled = true;     // 預設帳號是啟用的
+    }
+
+
     @ManyToMany(fetch = FetchType.EAGER) // EAGER 方便我們在 MyPage 直接讀取
     @JoinTable(
             name = "user_favorites",
@@ -47,6 +57,10 @@ public class User implements UserDetails {
     }
 
     // --- Getter / Setter ---
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -62,6 +76,8 @@ public class User implements UserDetails {
     public Set<Item> getItems() { return items; }
     public void setItems(Set<Item> items) { this.items = items; }
 
+
+
     @Override
     public String getUsername() {
         return this.email;
@@ -69,7 +85,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.singleton(new SimpleGrantedAuthority(this.role));
     }
 
     @Override
@@ -82,5 +98,7 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return this.enabled; }
+
+
 }

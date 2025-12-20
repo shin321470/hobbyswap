@@ -2,6 +2,7 @@ package com.hobbyswap.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,35 +14,69 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    // ▼▼▼ 第一條鏈：專門處理後台管理員 (優先級最高 Order=1) ▼▼▼
+    @Bean
+    @Order(1)
+    public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
+                // 1. 告訴 Spring Security：這條規則只管 /admin 開頭的網址
+                .securityMatcher("/admin/**")
+
                 .authorizeHttpRequests(auth -> auth
-                        // 設定哪些頁面是公開的 (首頁、登入頁、註冊頁、CSS樣式、圖片、H2控制台)
-                        .requestMatchers("/", "/register", "/login", "/css/**", "/images/**", "/h2-console/**", "/uploads/**").permitAll()
-                        .requestMatchers("/favicon.ico").permitAll()
-                        // 其他所有頁面都需要登入才能存取 (例如刊登商品、購買商品)
-                        .anyRequest().authenticated()
+                        // 允許任何人訪問管理員登入頁面 (不然連登入都看不到)
+                        .requestMatchers("/admin/login", "/css/**", "/images/**").permitAll()
+                        // 其他所有 /admin/** 的頁面，都必須要有 ADMIN 角色
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                 )
-                .formLogin(form -> form
-                        .loginPage("/login") // 指定我們自定義的登入頁面路徑
-                        .defaultSuccessUrl("/", true) // 登入成功後強制跳轉回首頁
+                .formLogin(login -> login
+                        .loginPage("/admin/login")        // ★ 設定管理員專用登入頁 URL
+                        .loginProcessingUrl("/admin/login") // ★ 表單提交的 URL
+                        .defaultSuccessUrl("/admin/dashboard", true) // ★ 登入成功後去後台儀表板
+                        .failureUrl("/admin/login?error=true") // 登入失敗留在後台登入頁
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/") // 登出後跳轉回首頁
+                        .logoutUrl("/admin/logout")       // ★ 管理員專用登出 URL
+                        .logoutSuccessUrl("/admin/login?logout=true") // 登出後回到後台登入頁
                         .permitAll()
                 );
-
-        // 為了讓 H2 Console 能正常運作，必須關閉 CSRF 和 Frame 保護 (僅限開發環境使用)
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
-        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
 
+    // ▼▼▼ 第二條鏈：處理前台一般使用者 (優先級較低 Order=2) ▼▼▼
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        // 使用 BCrypt 強雜湊演算法來加密密碼
-        return new BCryptPasswordEncoder();
+    @Order(2)
+    public SecurityFilterChain userFilterChain(HttpSecurity http) throws Exception {
+        http
+                // 這裡不用 securityMatcher，因為它會接住所有剩下沒被上面攔截的請求
+                .authorizeHttpRequests(auth -> auth
+                        // 公開頁面設定
+                        .requestMatchers("/", "/register", "/login", "/css/**", "/images/**", "/uploads/**", "/h2-console/**", "/favicon.ico").permitAll()
+                        // 其他都要登入
+                        .anyRequest().authenticated()
+                )
+                .formLogin(login -> login
+                        .loginPage("/login")              // ★ 一般使用者登入頁
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/", true)     // ★ 一般人登入後回首頁
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")             // ★ 一般使用者登出
+                        .logoutSuccessUrl("/")            // 登出後回首頁
+                        .permitAll()
+                );
+
+        // H2 Console 的特殊設定 (放在一般通道即可)
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
+        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+
+        return http.build();
     }
 }
