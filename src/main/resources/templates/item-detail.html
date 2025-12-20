@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${item.title} + ' - SPEC'">商品詳情</title>
@@ -288,6 +289,55 @@
                 <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
             </div>
 
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ddd;">
+
+    <div class="reviews-section">
+        <h3>📝 商品評論</h3>
+
+        <div th:if="${reviews.empty}" style="color: #888; margin-bottom: 20px;">
+            目前還沒有評論，成為第一個評論的人吧！
+        </div>
+
+        <div th:each="review : ${reviews}" style="background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <strong th:text="${review.user.name}">User</strong>
+                <span style="color: #f39c12;">
+                <span th:text="${'★'.repeat(review.rating)}">★★★★★</span>
+                <span th:text="${'☆'.repeat(5 - review.rating)}"></span>
+            </span>
+            </div>
+            <p th:text="${review.content}" style="margin: 0; color: #333;">評論內容</p>
+            <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}" style="color: #999;"></small>
+        </div>
+
+        <div sec:authorize="isAuthenticated()" style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 20px;">
+            <h4>留下您的評論</h4>
+            <form th:action="@{'/items/' + ${item.id} + '/review'}" method="post">
+
+                <div style="margin-bottom: 10px;">
+                    <label>評分:</label>
+                    <select name="rating" style="padding: 5px;">
+                        <option value="5">★★★★★ (5分)</option>
+                        <option value="4">★★★★ (4分)</option>
+                        <option value="3">★★★ (3分)</option>
+                        <option value="2">★★ (2分)</option>
+                        <option value="1">★ (1分)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <textarea name="content" rows="3" placeholder="寫下您對商品的看法..." required style="width: 100%; padding: 10px;"></textarea>
+                </div>
+
+                <button type="submit" class="btn">送出評論</button>
+            </form>
+        </div>
+
+        <div sec:authorize="!isAuthenticated()" style="margin-top: 20px;">
+            <a href="/login" class="btn">登入後即可發表評論</a>
         </div>
     </div>
 </div>

@@ -4,6 +4,8 @@ import com.hobbyswap.model.Item;
 import com.hobbyswap.model.User;
 import com.hobbyswap.service.ItemService;
 import com.hobbyswap.service.UserService;
+import com.hobbyswap.model.Review;
+import com.hobbyswap.repository.ReviewRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 public class ItemController {
@@ -26,6 +30,7 @@ public class ItemController {
     @Autowired private ItemService itemService;
     @Autowired private UserService userService;
     @Autowired private com.hobbyswap.repository.UserRepository userRepository;
+    @Autowired private ReviewRepository reviewRepository;
 
     // 首頁 (包含搜尋邏輯)
     @GetMapping("/")
@@ -45,20 +50,41 @@ public class ItemController {
 
     // 商品詳情
     @GetMapping("/items/{id}")
-    public String itemDetail(@PathVariable Long id, Model model, Principal principal) {
+    public String itemDetail(@PathVariable Long id, Model model) {
         Item item = itemService.findById(id);
         model.addAttribute("item", item);
 
-        boolean isFavorite = false;
-        if (principal != null) {
-            User user = userRepository.findByEmail(principal.getName()).orElse(null);
-            if (user != null) {
-                isFavorite = user.getFavoriteItems().contains(item);
-            }
-        }
-        model.addAttribute("isFavorite", isFavorite);
+        // 撈出該商品的所有評論
+        List<Review> reviews = reviewRepository.findByItemId(id);
+        model.addAttribute("reviews", reviews);
 
         return "item-detail";
+    }
+
+    // ▼ 新增：處理提交評論
+    @PostMapping("/items/{id}/review")
+    public String addReview(@PathVariable Long id,
+                            @RequestParam("content") String content,
+                            @RequestParam("rating") int rating,
+                            Principal principal) {
+
+        // 1. 找出商品與使用者
+        Item item = itemService.findById(id);
+        User user = userService.findByEmail(principal.getName());
+
+        // 2. 建立新評論
+        Review review = new Review();
+        review.setContent(content);
+        review.setRating(rating);
+        review.setUser(user);
+        review.setItem(item);
+        review.setCreatedAt(LocalDateTime.now());
+
+        // 3. 存檔
+        reviewRepository.save(review);
+
+        // 4. 重新導向回該商品頁面
+        return "redirect:/items/" + id;
     }
 
     // 刊登頁面

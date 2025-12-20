@@ -2,7 +2,6 @@ package com.hobbyswap.service;
 
 import java.util.List;
 import com.hobbyswap.model.User;
-import com.hobbyswap.model.User;
 import com.hobbyswap.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
