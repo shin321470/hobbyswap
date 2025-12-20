@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>My Page</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -80,21 +82,30 @@
     </div>
   </div>
 
-  <div class="content-panel">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('selling')" th:text="#{mypage.tab.selling}">SELLING</button>
-      <button class="tab-btn" onclick="switchTab('sold')" th:text="#{mypage.tab.sold}">SOLD</button>
-      <button class="tab-btn" th:text="#{mypage.tab.fav}">FAVORITES</button>
+  <div class="content-panel" style="min-height: 600px;">
+    <div class="tabs-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+
+      <div class="tabs" style="margin-bottom: 0;">
+        <button class="tab-btn active" onclick="switchTab('selling')" th:text="#{mypage.tab.selling}">SELLING</button>
+        <button class="tab-btn" onclick="switchTab('sold')" th:text="#{mypage.tab.sold}">SOLD</button>
+        <button class="tab-btn" onclick="switchTab('fav')" th:text="#{mypage.tab.fav}">FAVORITES</button>
+      </div>
+
+      <div class="mypage-search">
+        <input type="text" id="localSearchInput" onkeyup="filterMyItems()"
+               th:placeholder="#{search.placeholder}"
+               style="margin: 0; padding: 8px 15px; width: 200px; border: 2px solid black; font-family: 'Space Mono', monospace;">
+      </div>
     </div>
 
-    <div id="tab-selling" class="tab-content">
+    <div id="tab-selling" class="tab-content" style="min-height: 500px;">
       <div th:if="${user.items.isEmpty()}" class="empty-state">
         <h3 th:text="#{mypage.empty.title}">NOTHING HERE YET</h3>
         <p th:text="#{mypage.empty.desc}">You haven't listed any items yet.</p>
         <a th:href="@{/items/new}" class="btn" style="background: var(--highlight); color: black;" th:text="#{mypage.empty.btn}">START SELLING</a>
       </div>
 
-      <div class="item-grid">
+      <div class="item-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 700px; min-height: 400px;">
         <th:block th:each="item : ${user.items}">
           <div class="my-item-card" th:if="${item.status == 'ON_SALE' and item.status != 'DELETED'} ">
             <div class="item-img-container">
@@ -114,13 +125,20 @@
                       th:text="${item.uploadDate != null ? #temporals.format(item.uploadDate, 'yyyy-MM-dd') : 'N/A'}">
                       Date
                 </span>
+                <span style="font-weight: bold; color: var(--text-main); background: #eee; padding: 2px 5px; border: 1px solid black;">
+                Qty: <span th:text="${item.stockQuantity}">1</span>
+                </span>
               </div>
 
               <div>
                 <a th:href="@{/items/edit/{id}(id=${item.id})}" class="btn" th:text="#{mypage.btn.edit}">EDIT</a>
                 <form th:action="@{/items/delete/{id}(id=${item.id})}" method="post"
                       th:onsubmit="|return confirm('#{item.manage.confirm}');|">
-                  <button type="submit" class="btn" style="background: #ff4444; color: white;" th:text="#{mypage.btn.delete}">DELETE</button>
+                  <button type="submit" class="btn"
+                          style="background: #ff4444; color: white; white-space: nowrap; padding: 0 15px;"
+                          th:text="#{mypage.btn.delete}">
+                    DELETE
+                  </button>
                 </form>
               </div>
             </div>
@@ -129,8 +147,8 @@
       </div>
     </div>
 
-    <div id="tab-sold" class="tab-content" style="display: none;">
-      <div class="item-grid">
+    <div id="tab-sold" class="tab-content" style="min-height: 500px; display: none;">
+      <div class="item-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 700px; min-height: 400px;">
         <th:block th:each="item : ${user.items}">
           <div class="my-item-card" th:if="${item.status == 'SOLD' and item.status != 'DELETED' }">
 
@@ -160,6 +178,52 @@
       </div>
       <div id="no-sold-msg" style="padding: 40px; text-align: center; color: #888; display: none;" th:text="#{mypage.msg.nosold}">
         NO SOLD ITEMS
+      </div>
+    </div>
+
+    <div id="tab-fav" class="tab-content" style="display: none; min-height: 500px;">
+      <div th:if="${user.favoriteItems.isEmpty()}" class="empty-state">
+        <h3 th:text="#{mypage.fav.empty.title}">NO FAVORITES YET</h3>
+        <p th:text="#{mypage.fav.empty.desc}">Go find something cool!</p>
+        <a th:href="@{/}" class="btn" th:text="#{mypage.fav.empty.btn}">GO SHOPPING</a>
+      </div>
+
+      <div class="item-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 700px; max-width: 100%; min-height: 400px;">
+        <th:block th:each="item : ${user.favoriteItems}">
+          <div class="my-item-card" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="item-img-container" style="height: 200px; overflow: hidden;">
+              <img th:if="${item.imageName != null and item.imageName != ''}"
+                   th:src="@{'/uploads/' + ${item.imageName}}" alt="Item Image" style="width:100%; height:100%; object-fit:cover;">
+              <span th:if="${item.imageName == null or item.imageName == ''}" style="color:#ccc; font-weight:bold;">NO IMAGE</span>
+            </div>
+
+            <div class="item-info-box" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;">
+              <div>
+                <h4 th:text="${item.title}" style="margin: 0 0 10px 0; min-height: 2.4em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Item Name</h4>
+                <div class="item-status-badge" style="background: #f5f5f5; color: #666; margin-bottom: 10px;" th:text="#{mypage.tab.fav}">FAVORITES</div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <span style="font-weight: bold; font-size: 1.1rem;" th:text="'$' + ${item.price}">$100</span>
+                  <span style="font-size: 0.7rem; color: #888;" th:text="${item.uploadDate != null ? #temporals.format(item.uploadDate, 'yyyy-MM-dd') : 'N/A'}">Date</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
+
+                <a th:href="@{'/items/' + ${item.id}}" class="btn"
+                   style="flex: 1; height: 45px; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1rem; border: 3px solid #000; box-shadow: 3px 3px 0px #000;"
+                   th:text="#{mypage.btn.view}">VIEW</a>
+
+                <button type="button" class="btn"
+                        style="flex: 1; height: 45px; background: #ff4444; color: white; border: 3px solid #000; box-shadow: 3px 3px 0px #000; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1rem; font-weight: bold; white-space: nowrap;"
+                        th:onclick="'removeFromFav(' + ${item.id} + ', this)'"
+                        th:text="#{mypage.btn.remove_fav}">
+                  REMOVE
+                </button>
+              </div>
+            </div>
+          </div>
+        </th:block>
       </div>
     </div>
 
@@ -211,13 +275,85 @@
 
 <script>
   function switchTab(tabName) {
-      document.getElementById('tab-selling').style.display = 'none';
-      document.getElementById('tab-sold').style.display = 'none';
-      var btns = document.querySelectorAll('.tab-btn');
-      btns.forEach(function(btn) { btn.classList.remove('active'); });
-      document.getElementById('tab-' + tabName).style.display = 'block';
-      event.currentTarget.classList.add('active');
+    var contents = document.querySelectorAll('.tab-content');
+    contents.forEach(function(content) {
+        content.style.display = 'none';
+    });
+
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+
+    document.getElementById('tab-' + tabName).style.display = 'block';
+
+    if (event) {
+        event.currentTarget.classList.add('active');
+    }
+
+    document.getElementById('localSearchInput').value = '';
+    filterMyItems();
+}
+
+  function filterMyItems() {
+      var input = document.getElementById('localSearchInput');
+      var filter = input.value.toLowerCase();
+
+      var cards = document.getElementsByClassName('my-item-card');
+
+      for (var i = 0; i < cards.length; i++) {
+          var titleElement = cards[i].getElementsByTagName("h4")[0];
+          if (titleElement) {
+              var titleText = titleElement.textContent || titleElement.innerText;
+
+              if (titleText.toLowerCase().indexOf(filter) > -1) {
+                  cards[i].style.display = "flex";
+              } else {
+                  cards[i].style.display = "none";
+              }
+          }
+      }
   }
+
+  function removeFromFav(itemId, btnElement) {
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+    if (!csrfToken || !csrfHeader) {
+        console.error("CSRF token not found. Make sure it's in the <head>.");
+        return;
+    }
+
+    if (!confirm("確定要取消收藏嗎？")) return;
+
+    fetch(`/items/${itemId}/favorite`, {
+        method: 'POST',
+        headers: {
+            [csrfHeader]: csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // 找到卡片並執行消失動畫
+            const card = btnElement.closest('.my-item-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.remove();
+                const grid = document.querySelector('#tab-fav .item-grid');
+                if (grid && grid.querySelectorAll('.my-item-card').length === 0) {
+                    location.reload();
+                }
+            }, 300);
+        } else {
+            alert("取消收藏失敗，請重試");
+        }
+    })
+    .catch(error => console.error('Fetch error:', error));
+}
+
+
 </script>
 </body>
 </html>

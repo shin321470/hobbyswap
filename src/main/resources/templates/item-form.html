@@ -69,6 +69,13 @@
         <label th:text="#{form.price}">價格:</label>
         <input type="number" th:field="*{price}" required th:placeholder="#{form.price_ph}">
 
+        <div style="margin-bottom: 25px;">
+            <label for="stockQuantity" th:text="#{item.stock_quantity}">QUANTITY (庫存)</label>
+
+            <input type="number" id="stockQuantity" th:field="*{stockQuantity}" min="1" value="1" required
+                   style="width: 100%; padding: 15px; border: 2px solid #ccc; background: #FAFAFA; font-family: 'Space Mono', monospace; font-size: 1rem; outline: none;">
+        </div>
+
         <label th:text="#{form.desc}">描述:</label>
         <textarea th:field="*{description}" rows="6" th:placeholder="#{form.desc_ph}"></textarea>
 

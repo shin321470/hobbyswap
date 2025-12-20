@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -27,6 +28,23 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Item> items;
+
+    @ManyToMany(fetch = FetchType.EAGER) // EAGER 方便我們在 MyPage 直接讀取
+    @JoinTable(
+            name = "user_favorites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
+    private Set<Item> favoriteItems = new HashSet<>();
+
+    // Getter & Setter
+    public Set<Item> getFavoriteItems() {
+        return favoriteItems;
+    }
+
+    public void setFavoriteItems(Set<Item> favoriteItems) {
+        this.favoriteItems = favoriteItems;
+    }
 
     // --- Getter / Setter ---
     public Long getId() { return id; }

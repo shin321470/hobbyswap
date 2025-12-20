@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <style>
         .product-layout {
@@ -174,6 +176,11 @@
                 <span th:if="${item.status == 'SOLD'}" class="sold-stamp" style="position:static; transform:none; font-size:1.5rem; padding:5px 10px; border-width:2px;" th:text="#{item.sold}">SOLD</span>
             </div>
 
+            <div style="margin-top: 10px; font-weight: bold; color: #666; font-family: 'Space Mono', monospace;">
+                <span th:text="#{item.stock_quantity}">STOCK:</span>
+                <span th:text="${item.stockQuantity}">1</span>
+            </div>
+
             <hr class="divider">
 
             <div>
@@ -232,11 +239,33 @@
 
                 <div th:if="${#authentication.principal != 'anonymousUser'}">
 
-                    <div th:if="${#authentication.name != item.seller.email}">
-                        <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post">
+                    <div th:if="${#authentication.name != item.seller.email}"
+                         style="display: flex; gap: 15px; align-items: center; margin-top: 20px;">
+
+                        <button type="button" id="fav-btn"
+                                class="btn-fav"
+                                th:classappend="${isFavorite} ? 'active' : ''"
+                                th:onclick="'toggleFavorite(' + ${item.id} + ')'"
+                                style="height: 65px; width: 65px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <span id="fav-icon" th:text="${isFavorite} ? '♥' : '♡'" style="font-size: 2rem;">♡</span>
+                        </button>
+
+                        <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post"
+                              style="display: flex; flex: 1; gap: 0; align-items: center; height: 65px;">
+
+                            <div class="qty-label" th:text="#{item.quantity}">數量:</div>
+
+                            <button type="button" class="qty-btn" onclick="updateQty(-1)" th:disabled="${item.stockQuantity == 0}" style="border-right: none;">-</button>
+                            <input type="number" id="buy-qty" name="quantity" min="1" th:max="${item.stockQuantity}" value="1"
+                                   class="input-brutal" th:disabled="${item.stockQuantity == 0}"
+                                   style="width: 60px; text-align: center; border-left: none; border-right: none;">
+                            <button type="button" class="qty-btn" onclick="updateQty(1)" th:disabled="${item.stockQuantity == 0}" style="border-left: none; margin-right: 20px;">+</button>
+
                             <button type="submit" class="btn"
-                                    style="width: 100%; font-size: 1.2rem; padding: 15px;"
-                                    th:text="#{item.buy}">
+                                    style="flex: 1; height: 100%; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;"
+                                    th:disabled="${item.stockQuantity == 0}"
+                                    th:styleappend="${item.stockQuantity == 0 ? '; background: #ccc; cursor: not-allowed;' : ''}"
+                                    th:text="${item.stockQuantity > 0} ? #{item.buy} : 'SOLD OUT'">
                                 BUY NOW
                             </button>
                         </form>
@@ -254,7 +283,8 @@
                 </div>
             </div>
 
-            <div class="action-box" th:if="${item.status == 'SOLD'}" style="background: #f0f0f0; border-color: #ccc;">
+            <div class="action-box" th:if="${item.status == 'SOLD' or item.stockQuantity == 0}"
+                 style="background: #f0f0f0; border-color: #ccc;">
                 <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
             </div>
 
@@ -316,5 +346,43 @@
     </div>
 </footer>
 
+<script>
+    function updateQty(change) {
+        var input = document.getElementById('buy-qty');
+        var currentVal = parseInt(input.value) || 1;
+        var maxVal = parseInt(input.getAttribute('max'));
+        var newVal = currentVal + change;
+        if (newVal >= 1 && newVal <= maxVal) {
+            input.value = newVal;
+        }
+    }
+
+    function toggleFavorite(itemId) {
+        const btn = document.getElementById('fav-btn');
+        const icon = document.getElementById('fav-icon');
+
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        fetch(`/items/${itemId}/favorite`, {
+            method: 'POST',
+            headers: {
+                [header]: token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+        if (response.ok) {
+            const isActive = btn.classList.toggle('active');
+            icon.innerText = isActive ? '♥' : '♡';
+        } else if (response.status === 403) {
+            // 如果還是 403，表示權杖過期或真的沒登入
+            alert("連線逾時或未登入，請重新登入");
+            window.location.href = "/login";
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
 </body>
 </html>
