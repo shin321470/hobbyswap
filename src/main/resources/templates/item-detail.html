@@ -254,44 +254,60 @@
 
                 <div th:if="${#authentication.principal != 'anonymousUser'}">
 
-                    <div th:if="${#authentication.name != item.seller.email}"
-                         style="display: flex; gap: 15px; align-items: center; margin-top: 20px;">
+                    div th:if="${#authentication.name != item.seller.email}"
+                    style="display: flex; gap: 15px; align-items: center; margin-top: 20px;">
 
-                        <button type="button" id="fav-btn"
-                                class="btn-fav"
-                                th:classappend="${isFavorite} ? 'active' : ''"
-                                th:onclick="'toggleFavorite(' + ${item.id} + ')'"
-                                style="height: 65px; width: 65px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <span id="fav-icon" th:text="${isFavorite} ? '♥' : '♡'" style="font-size: 2rem;">♡</span>
+                    <button type="button" id="fav-btn"
+                            class="btn-fav"
+                            th:classappend="${isFavorite} ? 'active' : ''"
+                            th:onclick="'toggleFavorite(' + ${item.id} + ')'"
+                            style="height: 65px; width: 65px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <span id="fav-icon" th:text="${isFavorite} ? '♥' : '♡'" style="font-size: 2rem;">♡</span>
+                    </button>
+
+                    <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post"
+                          style="display: flex; flex: 1; gap: 0; align-items: center; height: 65px;">
+
+                        <div class="qty-label" th:text="#{item.quantity}">數量:</div>
+
+                        <button type="button" class="qty-btn" onclick="updateQty(-1)" th:disabled="${item.stockQuantity == 0}" style="border-right: none;">-</button>
+
+                        <input type="number" id="buy-qty" name="quantity" min="1" th:max="${item.stockQuantity}" value="1"
+                               class="input-brutal" th:disabled="${item.stockQuantity == 0}"
+                               style="width: 60px; text-align: center; border-left: none; border-right: none;">
+
+                        <button type="button" class="qty-btn" onclick="updateQty(1)" th:disabled="${item.stockQuantity == 0}" style="border-left: none; margin-right: 20px;">+</button>
+
+                        <button type="submit" class="btn"
+                                style="flex: 1; height: 100%; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;"
+                                th:disabled="${item.stockQuantity == 0}"
+                                th:styleappend="${item.stockQuantity == 0 ? '; background: #ccc; cursor: not-allowed;' : ''}"
+                                th:text="${item.stockQuantity > 0} ? #{item.buy} : 'SOLD OUT'">
+                            BUY NOW
                         </button>
+                    </form>
 
-                        <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post"
-                              style="display: flex; flex: 1; gap: 0; align-items: center; height: 65px;">
+                    <form th:action="@{/cart/add}" method="post"
+                          onsubmit="document.getElementById('hidden-cart-qty').value = document.getElementById('buy-qty').value">
 
-                            <div class="qty-label" th:text="#{item.quantity}">數量:</div>
+                        <input type="hidden" name="itemId" th:value="${item.id}">
+                        <input type="hidden" name="quantity" id="hidden-cart-qty" value="1">
 
-                            <button type="button" class="qty-btn" onclick="updateQty(-1)" th:disabled="${item.stockQuantity == 0}" style="border-right: none;">-</button>
-                            <input type="number" id="buy-qty" name="quantity" min="1" th:max="${item.stockQuantity}" value="1"
-                                   class="input-brutal" th:disabled="${item.stockQuantity == 0}"
-                                   style="width: 60px; text-align: center; border-left: none; border-right: none;">
-                            <button type="button" class="qty-btn" onclick="updateQty(1)" th:disabled="${item.stockQuantity == 0}" style="border-left: none; margin-right: 20px;">+</button>
-
-                            <button type="submit" class="btn"
-                                    style="flex: 1; height: 100%; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;"
-                                    th:disabled="${item.stockQuantity == 0}"
-                                    th:styleappend="${item.stockQuantity == 0 ? '; background: #ccc; cursor: not-allowed;' : ''}"
-                                    th:text="${item.stockQuantity > 0} ? #{item.buy} : 'SOLD OUT'">
-                                BUY NOW
-                            </button>
-                        </form>
-                    </div>
+                        <button type="submit" class="btn"
+                                style="background: white; color: black; border: 2px solid black; height: 65px; width: 65px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"
+                                th:disabled="${item.stockQuantity == 0}"
+                                title="Add to Cart">
+                            🛒
+                        </button>
+                    </form>
+                </div>
 
                     <div th:if="${#authentication.name == item.seller.email}"
                          style="text-align: center; margin-top: 15px; padding: 10px; background: #eee; color: #666; border: 1px dashed #ccc;">
 
-            <span style="font-weight: bold;" th:text="#{item.self_buy_error}">
-                🚫 賣家無法購買自己的商品
-            </span>
+                        <span style="font-weight: bold;" th:text="#{item.self_buy_error}">
+                            🚫 賣家無法購買自己的商品
+                        </span>
 
                     </div>
 

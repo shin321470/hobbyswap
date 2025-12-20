@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>MY CART - HobbySwap</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <style>
+    .cart-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .cart-table th, .cart-table td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+    .cart-table th { background: black; color: white; }
+    .cart-total { text-align: right; margin-top: 20px; font-size: 1.5rem; font-weight: bold; }
+    .item-thumb { width: 60px; height: 60px; object-fit: cover; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <a href="/" class="logo">HobbySwap</a>
+  <div class="nav-links">
+    <a href="/" class="btn">← 繼續購物</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>🛒 SHOPPING CART</h1>
+
+  <div th:if="${cart.items.empty}" style="text-align: center; padding: 50px; color: #888;">
+    <h3>您的購物車是空的</h3>
+    <a href="/" class="btn" style="margin-top: 20px;">去逛逛商品</a>
+  </div>
+
+  <div th:if="${!cart.items.empty}">
+    <table class="cart-table">
+      <thead>
+      <tr>
+        <th>商品</th>
+        <th>單價</th>
+        <th>數量</th>
+        <th>小計</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="ci : ${cart.items}">
+        <td style="display: flex; align-items: center; gap: 10px;">
+          <img th:if="${ci.item.imageName != null}" th:src="@{'/uploads/' + ${ci.item.imageName}}" class="item-thumb">
+          <a th:href="@{'/items/' + ${ci.item.id}}" th:text="${ci.item.title}" style="color: black; font-weight: bold; text-decoration: none;">商品名</a>
+        </td>
+        <td th:text="'$' + ${ci.item.price}">$100</td>
+        <td th:text="${ci.quantity}">1</td>
+        <td th:text="'$' + ${ci.subTotal}">$100</td>
+        <td>
+          <form th:action="@{'/cart/remove/' + ${ci.id}}" method="post">
+            <button type="submit" class="btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">移除</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div class="cart-total">
+      TOTAL: <span style="color: var(--highlight);" th:text="'$' + ${cart.totalPrice}">$500</span>
+    </div>
+
+    <div style="text-align: right; margin-top: 20px;">
+      <button class="btn" style="width: 200px; font-size: 1.2rem;">前往結帳 →</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
