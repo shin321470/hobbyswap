@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>發表新話題 - HobbySwap</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="navbar">
+    <a href="/" class="logo">HobbySwap</a>
+</div>
+
+<div class="container" style="max-width: 800px; margin-top: 40px;">
+    <h2>📢 START A TOPIC</h2>
+
+    <form th:action="@{/forum/new}" method="post" th:object="${post}" class="action-box">
+
+        <div style="margin-bottom: 20px;">
+            <label>標題 TITLE</label>
+            <input type="text" th:field="*{title}" class="input-brutal" required placeholder="請輸入標題...">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label>分類 CATEGORY</label>
+            <select th:field="*{category}" class="input-brutal">
+                <option th:each="cat : ${categories}"
+                        th:value="${cat}"
+                        th:text="${cat.display}">科技</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 20px; background: #f0f0f0; padding: 15px; border: 1px dashed #999;">
+            <label>📦 關聯我的商品 (選填)</label>
+            <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">選擇您正在販售的商品，增加曝光度！</p>
+
+            <select name="sharedItemId" class="input-brutal" style="background: white;">
+                <option value="">-- 不關聯商品 --</option>
+                <option th:each="item : ${myItems}"
+                        th:value="${item.id}"
+                        th:text="${item.title} + ' ($' + ${item.price} + ')'"></option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label>內容 CONTENT</label>
+            <textarea th:field="*{content}" rows="6" class="input-brutal" required></textarea>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%;">發佈文章</button>
+    </form>
+</div>
+</body>
+</html>

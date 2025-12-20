@@ -161,4 +161,22 @@ public class ItemController {
         itemService.toggleFavorite(id, principal.getName());
         return org.springframework.http.ResponseEntity.ok("Success");
     }
+
+    // 刪除商品評論功能
+    @PostMapping("/items/reviews/{id}/delete")
+    public String deleteReview(@PathVariable Long id, Principal principal) {
+        // 1. 找出評論
+        Review review = reviewRepository.findById(id).orElse(null);
+
+        if (review != null) {
+            // 2. 權限檢查：只有「評論者本人」可以刪除
+            // 注意：這裡假設 Review 裡的 User 欄位名稱是 "user" (或 author，請依您的 Review.java 為準)
+            if (review.getUser().getEmail().equals(principal.getName())) {
+                Long itemId = review.getItem().getId(); // 記住商品 ID，刪除後要跳轉回去
+                reviewRepository.delete(review);
+                return "redirect:/items/" + itemId; // 刪除後回到該商品頁面
+            }
+        }
+        return "redirect:/"; // 如果出錯，回首頁
+    }
 }

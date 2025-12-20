@@ -56,7 +56,7 @@ public class SecurityConfig {
                 // 這裡不用 securityMatcher，因為它會接住所有剩下沒被上面攔截的請求
                 .authorizeHttpRequests(auth -> auth
                         // 公開頁面設定
-                        .requestMatchers("/", "/register", "/login", "/css/**", "/images/**", "/uploads/**", "/h2-console/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/register", "/login","/forum/**", "/css/**", "/images/**", "/uploads/**", "/h2-console/**", "/favicon.ico").permitAll()
                         // 其他都要登入
                         .anyRequest().authenticated()
                 )

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${post.title} + ' - HobbySwap Forum'">文章詳情</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <style>
+    .post-detail { border: 2px solid black; padding: 30px; margin-bottom: 30px; background: white; }
+    .post-meta { color: #666; font-size: 0.9rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+    /* 評論區樣式 */
+    .comment-section { background: #f9f9f9; padding: 20px; border-top: 2px solid black; }
+    .comment-box { margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+    .comment-author { font-weight: bold; color: var(--highlight); }
+    .comment-time { font-size: 0.8rem; color: #999; margin-left: 10px; }
+
+    /* 關聯商品卡片 (復用之前的樣式) */
+    .shared-item-box { border: 2px solid #eee; padding: 15px; margin-top: 20px; display: inline-flex; align-items: center; gap: 15px; background: #fff; }
+    .shared-item-box img { width: 60px; height: 60px; object-fit: cover; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <a href="/" class="logo">HobbySwap</a>
+  <div class="nav-links">
+    <a href="/forum" class="btn">← 回論壇列表</a>
+  </div>
+</div>
+
+<div class="container" style="max-width: 800px;">
+
+  <div class="post-detail">
+    <h1 th:text="${post.title}" style="margin-top: 0;">標題</h1>
+    <div class="post-meta">
+      Tag: <span th:text="${post.category.display}" style="background:black; color:white; padding:2px 5px;">分類</span> |
+      Author: <span th:text="${post.author.name}">作者</span> |
+      Date: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">時間</span>
+    </div>
+
+    <div class="post-detail">
+      <h1 th:text="${post.title}" style="margin-top: 0;">標題</h1>
+
+      <div th:if="${#authentication.name == post.author.email}" style="margin-top: 20px; text-align: right;">
+        <form th:action="@{'/forum/' + ${post.id} + '/delete'}" method="post" style="display: inline;">
+          <button type="submit"
+                  class="btn-danger"
+                  style="background: #c0392b; color: white; border: none; padding: 10px 20px; cursor: pointer;"
+                  onclick="return confirm('確定要刪除這篇文章嗎？底下的留言也會一併消失喔！');">
+            🗑️ 刪除文章
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div th:text="${post.content}" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.6;">
+      文章內容...
+    </div>
+
+    <div th:if="${post.sharedItem != null}" class="shared-item-box">
+      <img th:if="${post.sharedItem.imageName != null}" th:src="@{'/uploads/' + ${post.sharedItem.imageName}}">
+      <div>
+        <div style="font-size: 0.8rem; color: #888;">MENTIONED ITEM</div>
+        <a th:href="@{'/items/' + ${post.sharedItem.id}}" th:text="${post.sharedItem.title}" style="font-weight: bold; color: black; text-decoration: none;">商品名</a>
+        <div style="color: red;" th:text="'$' + ${post.sharedItem.price}">$100</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comment-section">
+    <h3>💬 COMMENTS (<span th:text="${comments.size()}">0</span>)</h3>
+
+    <div th:each="comment : ${comments}" class="comment-box" style="position: relative;">
+
+      <div>
+        <span class="comment-author" th:text="${comment.author.name}">路人A</span>
+        <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">2023-12-20</span>
+      </div>
+      <div th:text="${comment.content}" style="margin-top: 5px; white-space: pre-wrap;">評論內容...</div>
+
+      <div th:if="${#authentication.name == comment.author.email}"
+           style="position: absolute; top: 10px; right: 10px;">
+
+        <form th:action="@{'/forum/comments/' + ${comment.id} + '/delete'}" method="post">
+          <button type="submit"
+                  style="background: none; border: none; color: #999; cursor: pointer; font-weight: bold; font-size: 1.1rem;"
+                  onclick="return confirm('確定要刪除這則留言嗎？');"
+                  title="刪除留言">
+            ✕
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <div th:if="${comments.isEmpty()}" style="color: #999; font-style: italic; margin-bottom: 20px;">
+      目前還沒有評論，搶頭香吧！
+    </div>
+
+    <div th:if="${#authentication.name != 'anonymousUser'}" style="margin-top: 20px;">
+      <form th:action="@{'/forum/' + ${post.id} + '/comment'}" method="post">
+        <textarea name="content" rows="3" class="input-brutal" placeholder="分享您的看法..." required style="width: 100%; margin-bottom: 10px;"></textarea>
+        <button type="submit" class="btn" style="width: 100%;">送出評論</button>
+      </form>
+    </div>
+
+    <div th:if="${#authentication.name == 'anonymousUser'}" style="text-align: center; margin-top: 20px;">
+      <a href="/login" class="btn" style="display: inline-block;">登入以參與討論</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

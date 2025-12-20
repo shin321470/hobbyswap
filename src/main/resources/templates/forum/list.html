@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>社群論壇 - HobbySwap</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <style>
+    .category-nav { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+    .cat-link { text-decoration: none; color: #888; font-weight: bold; padding: 5px 10px; }
+    .cat-link.active { color: var(--text-main); background: var(--highlight); border: 2px solid black; }
+
+    .post-card { border: 2px solid black; margin-bottom: 20px; padding: 20px; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 200px; gap: 20px; }
+    .post-tag { background: black; color: white; padding: 2px 8px; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; }
+
+    /* 關聯商品的小卡片 */
+    .shared-item-box { border: 1px solid #ccc; padding: 10px; text-align: center; background: #fafafa; }
+    .shared-item-box img { width: 80px; height: 80px; object-fit: cover; margin-bottom: 5px; }
+    .shared-item-box a { text-decoration: none; color: black; font-weight: bold; font-size: 0.9rem; }
+
+    @media (max-width: 768px) { .post-card { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <a href="/" class="logo">HobbySwap</a>
+  <div class="nav-links">
+    <a th:href="@{/forum/new}" class="btn">＋ 發新話題</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>💬 COMMUNITY FORUM</h1>
+
+  <div class="category-nav">
+    <a th:href="@{/forum}" class="cat-link" th:classappend="${currentCategory == null} ? 'active'">全部</a>
+    <a th:each="cat : ${categories}"
+       th:href="@{/forum(category=${cat})}"
+       class="cat-link"
+       th:classappend="${currentCategory == cat} ? 'active'"
+       th:text="${cat.display}">科技</a>
+  </div>
+
+  <div th:each="post : ${posts}" class="post-card">
+
+    <div>
+      <span class="post-tag" th:text="${post.category.display}">分類</span>
+      <h3 style="margin: 5px 0;">
+        <a th:href="@{'/forum/' + ${post.id}}" th:text="${post.title}" style="text-decoration: none; color: black;">
+          文章標題
+        </a>
+      </h3>
+      <div style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
+        by <span th:text="${post.author.name}">User</span>
+        at <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">Date</span>
+      </div>
+      <p th:text="${post.content}" style="white-space: pre-wrap; color: #333;">內容...</p>
+    </div>
+
+    <div th:if="${post.sharedItem != null}">
+      <div class="shared-item-box">
+        <div style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">MENTIONED ITEM</div>
+        <img th:if="${post.sharedItem.imageName != null}" th:src="@{'/uploads/' + ${post.sharedItem.imageName}}">
+        <br>
+        <a th:href="@{'/items/' + ${post.sharedItem.id}}" th:text="${post.sharedItem.title}">商品名稱</a>
+        <div style="color: var(--highlight); font-weight: bold;" th:text="'$' + ${post.sharedItem.price}">$100</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

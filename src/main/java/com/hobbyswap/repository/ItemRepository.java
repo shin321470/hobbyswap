@@ -1,6 +1,7 @@
 package com.hobbyswap.repository;
 
 import com.hobbyswap.model.Item;
+import com.hobbyswap.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
@@ -11,4 +12,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
             String status1, String title, String status2, String description
     );
+
+    List<Item> findBySellerAndStatus(User seller, String status);
 }
