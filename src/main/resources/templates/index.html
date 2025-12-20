@@ -14,6 +14,14 @@
 <div class="navbar">
     <a th:href="@{/}" class="logo">HobbySwap</a>
 
+    <form action="/" method="get" class="search-form">
+        <input type="text" name="keyword"
+               th:placeholder="#{search.placeholder}"
+               th:value="${keyword}">
+
+        <button type="submit" th:text="#{search.btn}">GO</button>
+    </form>
+
     <div class="nav-links">
         <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
 

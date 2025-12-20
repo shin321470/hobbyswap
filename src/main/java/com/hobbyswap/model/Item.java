@@ -19,6 +19,8 @@ public class Item {
 
     private String imageName;
 
+    private Integer stockQuantity = 1;
+
     // 狀態: ON_SALE (上架中), SOLD (已售出)
     private String status = "ON_SALE";
 
@@ -46,5 +48,6 @@ public class Item {
     public void setSeller(User seller) { this.seller = seller; }
     public String getImageName() { return imageName; }
     public void setImageName(String imageName) { this.imageName = imageName; }
-
+    public Integer getStockQuantity() { return stockQuantity;}
+    public void setStockQuantity(Integer stockQuantity) {this.stockQuantity = stockQuantity;}
 }

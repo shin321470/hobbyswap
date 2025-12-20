@@ -4,37 +4,60 @@ import com.hobbyswap.model.Item;
 import com.hobbyswap.model.User;
 import com.hobbyswap.service.ItemService;
 import com.hobbyswap.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile; // 處理上傳檔案
-import org.springframework.web.bind.annotation.RequestParam; // 接收請求參數
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
-import java.io.IOException;     // 處理 IO 錯誤
-import java.nio.file.Files;     // 檔案操作工具
-import java.nio.file.Path;      //路徑物件
-import java.nio.file.Paths;     // 路徑工具
-import java.util.UUID;          // 產生唯一亂碼
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class ItemController {
 
     @Autowired private ItemService itemService;
     @Autowired private UserService userService;
+    @Autowired private com.hobbyswap.repository.UserRepository userRepository;
 
-    // 首頁
+    // 首頁 (包含搜尋邏輯)
     @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("items", itemService.findAllOnSale());
+    public String index(@RequestParam(required = false) String keyword, Model model) {
+        List<Item> items;
+
+        if (keyword != null && !keyword.isEmpty()) {
+            items = itemService.searchItems(keyword);
+        } else {
+            items = itemService.findAllOnSale();
+        }
+
+        model.addAttribute("items", items);
+        model.addAttribute("keyword", keyword); // 把關鍵字傳回去，讓搜尋框保留文字
         return "index";
     }
 
     // 商品詳情
     @GetMapping("/items/{id}")
-    public String itemDetail(@PathVariable Long id, Model model) {
-        model.addAttribute("item", itemService.findById(id));
+    public String itemDetail(@PathVariable Long id, Model model, Principal principal) {
+        Item item = itemService.findById(id);
+        model.addAttribute("item", item);
+
+        boolean isFavorite = false;
+        if (principal != null) {
+            User user = userRepository.findByEmail(principal.getName()).orElse(null);
+            if (user != null) {
+                isFavorite = user.getFavoriteItems().contains(item);
+            }
+        }
+        model.addAttribute("isFavorite", isFavorite);
+
         return "item-detail";
     }
 
@@ -45,9 +68,10 @@ public class ItemController {
         return "item-form";
     }
 
+    // 處理刊登 (上傳圖片)
     @PostMapping("/items")
     public String createItem(@ModelAttribute Item item,
-                             @RequestParam("imageFile") MultipartFile file, // 接收圖片
+                             @RequestParam("imageFile") MultipartFile file,
                              Principal principal) throws IOException {
 
         // 1. 處理圖片上傳
@@ -71,11 +95,15 @@ public class ItemController {
 
     // 購買
     @PostMapping("/items/{id}/buy")
-    public String buyItem(@PathVariable Long id) {
-        itemService.buyItem(id);
+    public String buyItem(@PathVariable Long id,
+                          @RequestParam(defaultValue = "1") int quantity) {
+
+        itemService.buyItem(id, quantity);
+
         return "redirect:/";
     }
 
+    // 刪除
     @PostMapping("/items/delete/{id}")
     public String deleteItem(@PathVariable Long id, Principal principal) {
         Item item = itemService.findById(id);
@@ -93,5 +121,18 @@ public class ItemController {
         }
 
         return "redirect:/mypage";
+    }
+
+    // ItemController.java
+
+    @PostMapping("/items/{id}/favorite")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<String> toggleFavorite(@PathVariable Long id, Principal principal) {
+        if (principal == null) {
+            return org.springframework.http.ResponseEntity.status(403).body("Not logged in");
+        }
+
+        itemService.toggleFavorite(id, principal.getName());
+        return org.springframework.http.ResponseEntity.ok("Success");
     }
 }
