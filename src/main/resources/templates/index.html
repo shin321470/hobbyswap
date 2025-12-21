@@ -26,11 +26,14 @@
         <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
 
             <a th:href="@{/forum}" class="btn"
-               style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; background-color: #000; color: #fff; border: 1px solid #000;">
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.forum}">
                 💬 FORUM
             </a>
 
-            <a href="/cart" class="btn" style="background: black; color: white; border: 1px solid white; margin-right: 10px;">
+            <a th:href="@{/cart}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.cart}">
                 🛒 CART
             </a>
 
@@ -102,7 +105,7 @@
                     <span th:text="#{item.seller}">SELLER</span>: <span th:text="${item.seller.name}">Name</span>
                 </p>
 
-                <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.buy}">VIEW DETAILS -></a>
+                <a th:href="@{'/items/' + ${item.id}}" class="btn-sm" th:text="#{item.view_details}">VIEW DETAILS -></a>
             </div>
 
         </div>

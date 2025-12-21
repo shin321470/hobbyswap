@@ -2,52 +2,227 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>發表新話題 - HobbySwap</title>
+    <title th:text="#{forum.new.title} + ' - HobbySwap'">發表新話題 - HobbySwap</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .forum-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .forum-header {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .input-brutal:focus {
+            outline: none;
+            border-color: var(--highlight);
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        label {
+            display: block;
+            font-family: 'Space Mono', monospace;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .action-box {
+            text-align: left !important;
+        }
+
+        .input-brutal,
+        textarea.input-brutal {
+            text-align: left !important;
+            padding-left: 15px;
+        }
+
+        select.input-brutal {
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .lang-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .lang-btn {
+            display: flex;
+            align-items: center;
+            padding-left: 15px !important;
+            text-align: left !important;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .lang-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border: 2px solid black;
+            border-top: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .lang-dropdown:hover .lang-content {
+            display: block;
+        }
+
+        .lang-content a {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: black;
+            border-bottom: 1px solid #eee;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer; /* 增加手型游標 */
+        }
+
+        .lang-content a:hover {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .lang-content a:last-child {
+            border-bottom: none;
+        }
+    </style>
 </head>
 <body>
+
 <div class="navbar">
-    <a href="/" class="logo">HobbySwap</a>
+    <a th:href="@{/}" class="logo">HobbySwap</a>
+
+    <div class="nav-links">
+        <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+
+            <a th:href="@{/forum}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.forum}">
+                💬 FORUM
+            </a>
+
+            <a th:href="@{/cart}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.cart}">
+                🛒 CART
+            </a>
+
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <div class="lang-dropdown">
+                    <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+                      <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+                      <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+                    </button>
+                    <div class="lang-content">
+                        <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                        <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                        <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                        <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+                    </div>
+                </div>
+
+            </span>
+
+            <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
+        </div>
+    </div>
 </div>
 
-<div class="container" style="max-width: 800px; margin-top: 40px;">
-    <h2>📢 START A TOPIC</h2>
+<div class="forum-container">
+    <h2 class="forum-header">START A TOPIC</h2>
 
-    <form th:action="@{/forum/new}" method="post" th:object="${post}" class="action-box">
+    <form th:action="@{/forum/new}" method="post" th:object="${post}" class="action-box"
+          style="padding: 40px; border: 3px solid black; width: 1000px; box-shadow: 12px 12px 0px rgba(0,0,0,0.1); background: white;">
 
-        <div style="margin-bottom: 20px;">
-            <label>標題 TITLE</label>
-            <input type="text" th:field="*{title}" class="input-brutal" required placeholder="請輸入標題...">
+        <div style="margin-bottom: 25px;">
+            <label th:text="#{forum.label.title}">標題 TITLE</label>
+            <input type="text" th:field="*{title}" class="input-brutal" required
+                   th:placeholder="#{forum.placeholder.title}" style="width: 100%; height: 50px;">
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <label>分類 CATEGORY</label>
-            <select th:field="*{category}" class="input-brutal">
-                <option th:each="cat : ${categories}"
-                        th:value="${cat}"
-                        th:text="${cat.display}">科技</option>
-            </select>
+        <div style="margin-bottom: 25px; position: relative; z-index: 500;">
+            <label th:text="#{forum.label.category}">分類 CATEGORY</label>
+
+            <input type="hidden" th:field="*{category}" id="selected-category">
+
+            <div class="lang-dropdown" style="width: 100%;">
+                <button type="button" class="lang-btn" style="width: 100%; justify-content: space-between; height: 50px; border: 2px solid black; box-shadow: 4px 4px 0px #000;">
+                    <span id="category-display" th:text="#{forum.placeholder.category}">請選擇分類</span>
+                    <span>▼</span>
+                </button>
+                <div class="lang-content" style="width: 100%; border: 2px solid black;">
+                    <a th:each="cat : ${categories}"
+                       href="javascript:void(0)"
+                       th:attr="data-value=${cat}, data-display=${cat.display}"
+                       onclick="selectOption('category', this.getAttribute('data-value'), this.getAttribute('data-display'))"
+                       th:text="${cat.display}">科技</a>
+                </div>
+            </div>
         </div>
 
-        <div style="margin-bottom: 20px; background: #f0f0f0; padding: 15px; border: 1px dashed #999;">
-            <label>📦 關聯我的商品 (選填)</label>
-            <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">選擇您正在販售的商品，增加曝光度！</p>
+        <div style="margin-bottom: 25px; background: var(--highlight); padding: 20px; border: 2px solid black; box-shadow: 5px 5px 0px black; position: relative; z-index: 400;">
+            <label><span th:text="#{forum.label.link_item}">關聯商品</span></label>
 
-            <select name="sharedItemId" class="input-brutal" style="background: white;">
-                <option value="">-- 不關聯商品 --</option>
-                <option th:each="item : ${myItems}"
-                        th:value="${item.id}"
-                        th:text="${item.title} + ' ($' + ${item.price} + ')'"></option>
-            </select>
+            <input type="hidden" name="sharedItemId" id="selected-item">
+
+            <div class="lang-dropdown" style="width: 100%;">
+                <button type="button" class="lang-btn" style="width: 100%; background: white; border: 2px solid black; box-shadow: 4px 4px 0px #000; height: 45px;">
+                    <span id="item-display" th:text="#{forum.option.none}">-- 不關聯商品 --</span>
+                    <span>▼</span>
+                </button>
+
+                <div class="lang-content" style="width: 100%; border: 2px solid black;">
+
+                    <a href="javascript:void(0)"
+                       th:attr="data-value='', data-display=#{forum.option.none}"
+                       onclick="selectOption('item', this.getAttribute('data-value'), this.getAttribute('data-display'))"
+                       style="color: #666; font-size: 0.9rem;">
+                        (取消選擇 / None)
+                    </a>
+
+                    <a th:each="item : ${myItems}"
+                       href="javascript:void(0)"
+                       th:attr="data-value=${item.id}, data-display=${item.title} + ' ($' + ${item.price} + ')'"
+                       onclick="selectOption('item', this.getAttribute('data-value'), this.getAttribute('data-display'))"
+                       th:text="${item.title} + ' ($' + ${item.price} + ')'">商品名稱</a>
+                </div>
+            </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <label>內容 CONTENT</label>
-            <textarea th:field="*{content}" rows="6" class="input-brutal" required></textarea>
+        <div style="margin-bottom: 25px;">
+            <label th:text="#{forum.label.content}">內容 CONTENT</label>
+            <textarea th:field="*{content}" rows="8" class="input-brutal" required
+                      style="width: 100%; padding: 15px; font-family: 'Space Mono', monospace;"></textarea>
         </div>
 
-        <button type="submit" class="btn" style="width: 100%;">發佈文章</button>
+        <button type="submit" class="btn"
+                style="width: 100%; height: 60px; font-size: 1.2rem; background: #000; color: #fff; border: 3px solid black; box-shadow: 6px 6px 0px rgba(0,0,0,0.2);"
+                th:text="#{forum.btn.submit}">發佈文章</button>
     </form>
 </div>
+
+<script>
+    function selectOption(type, value, displayText) {
+        if (type === 'category') {
+            document.getElementById('selected-category').value = value;
+            document.getElementById('category-display').innerText = displayText;
+        } else if (type === 'item') {
+            document.getElementById('selected-item').value = value;
+            document.getElementById('item-display').innerText = displayText;
+        }
+    }
+</script>
 </body>
 </html>

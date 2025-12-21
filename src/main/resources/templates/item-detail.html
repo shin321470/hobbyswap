@@ -102,6 +102,43 @@
             .product-layout { grid-template-columns: 1fr; }
             .product-image-area { height: 300px; }
         }
+
+        .reviews-section {
+            margin-top: 50px;
+            padding: 30px;
+            border: 2px solid black;
+            background: #fff;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.05);
+        }
+
+        .review-item {
+            border-bottom: 1px solid #000;
+            padding: 20px 0;
+        }
+
+        .review-item:last-child { border-bottom: none; }
+
+        .review-form-container {
+            margin-top: 40px;
+            padding: 25px;
+            background: var(--highlight);
+            border: 3px solid black;
+        }
+
+        .review-form-container textarea {
+            border: 2px solid black;
+            font-family: 'Space Mono', monospace;
+            padding: 15px;
+            resize: none;
+            margin-bottom: 15px;
+        }
+
+        .review-form-container select {
+            border: 2px solid black;
+            padding: 5px 10px;
+            font-family: 'Space Mono', monospace;
+            background: white;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +148,18 @@
 
     <div class="nav-links">
         <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+
+            <a th:href="@{/forum}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.forum}">
+                💬 FORUM
+            </a>
+
+            <a th:href="@{/cart}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.cart}">
+                🛒 CART
+            </a>
 
             <div class="lang-dropdown">
                 <button class="lang-btn">
@@ -124,31 +173,26 @@
             </div>
 
             <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
-
-        <div class="lang-dropdown">
-
-            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
-              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
-              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
-            </button>
-
-            <div class="lang-content">
-                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
-
-                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
-                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
-                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
-            </div>
-        </div>
-        <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
-            <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
-        </form>
-      </span>
+                <div class="lang-dropdown">
+                    <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+                      <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+                      <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+                    </button>
+                    <div class="lang-content">
+                        <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                        <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                        <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                        <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+                    </div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:flex; align-items:center;">
+                    <button type="submit" class="btn-logout" th:text="#{nav.logout}">LOGOUT</button>
+                </form>
+            </span>
 
             <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
-        <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
-      </span>
-
+                <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
         </div>
     </div>
 </div>
@@ -179,18 +223,18 @@
 
             <div style="margin-top: 10px; font-weight: bold; color: #666; font-family: 'Space Mono', monospace;">
                 <span th:text="#{item.stock_quantity}">STOCK:</span>
-                <span th:text="${item.stockQuantity}">1</span>
+                <span th:text="${item.stockQuantity}">0</span>
 
-                <span style="margin-left: 20px;">CATEGORY:</span>
+                <span style="margin-left: 20px;" th:text="#{item.category}">CATEGORY:</span>
 
                 <span th:switch="${item.category}"
                       style="color: var(--highlight); background: black; padding: 2px 6px; border-radius: 2px;">
 
-                    <span th:case="'CLOTHING'">服飾</span>
-                    <span th:case="'BOOKS'">書籍</span>
-                    <span th:case="'TOYS'">玩具</span>
-                    <span th:case="'ELECTRONICS'">3C 電子</span>
-                    <span th:case="'OTHERS'">其他</span>
+                    <span th:case="'CLOTHING'" th:text="#{item.category.clothing}">服飾</span>
+                    <span th:case="'BOOKS'" th:text="#{item.category.books}">書籍</span>
+                    <span th:case="'TOYS'" th:text="#{item.category.toys}">玩具</span>
+                    <span th:case="'ELECTRONICS'" th:text="#{item.category.electronics}">3C 電子</span>
+                    <span th:case="'OTHERS'" th:text="#{item.category.others}">其他</span>
 
                     <span th:case="*">未分類</span>
                 </span>
@@ -203,17 +247,16 @@
 
                 <div class="info-row">
                     <span class="info-label" th:text="#{item.shipping_from}">出貨地點</span>
-                    <span class="info-value">Taipei, Taiwan</span>
+                    <span class="info-value" th:text="#{item.shipping_location}">Taipei, Taiwan</span>
                 </div>
-
                 <div class="info-row">
                     <span class="info-label" th:text="#{item.shipping_fee}">運費</span>
-                    <span class="info-value">$ 60 (7-11 / FamilyMart)</span>
+                    <span class="info-value" >$ 60 (7-11 / FamilyMart)</span>
                 </div>
 
                 <div class="info-row">
                     <span class="info-label" th:text="#{item.shipping_est}">預計送達</span>
-                    <span class="info-value">3 - 5 Days (After Shipment)</span>
+                    <span class="info-value">3 - 5 Days</span>
                 </div>
             </div>
 
@@ -224,7 +267,7 @@
 
                 <div class="info-row">
                     <span class="info-label" th:text="#{item.condition}">商品狀況</span>
-                    <span class="info-value">Used - Good</span>
+                    <span class="info-value" th:text="#{item.condition.good}">Used - Good</span>
                 </div>
 
                 <div class="info-row">
@@ -254,53 +297,51 @@
 
                 <div th:if="${#authentication.principal != 'anonymousUser'}">
 
-                    div th:if="${#authentication.name != item.seller.email}"
-                    style="display: flex; gap: 15px; align-items: center; margin-top: 20px;">
+                    <div th:if="${#authentication.name != item.seller.email}"
+                         style="display: flex; gap: 15px; align-items: center; margin-top: 20px; height: 65px;">
 
-                    <button type="button" id="fav-btn"
-                            class="btn-fav"
-                            th:classappend="${isFavorite} ? 'active' : ''"
-                            th:onclick="'toggleFavorite(' + ${item.id} + ')'"
-                            style="height: 65px; width: 65px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                        <span id="fav-icon" th:text="${isFavorite} ? '♥' : '♡'" style="font-size: 2rem;">♡</span>
-                    </button>
-
-                    <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post"
-                          style="display: flex; flex: 1; gap: 0; align-items: center; height: 65px;">
-
-                        <div class="qty-label" th:text="#{item.quantity}">數量:</div>
-
-                        <button type="button" class="qty-btn" onclick="updateQty(-1)" th:disabled="${item.stockQuantity == 0}" style="border-right: none;">-</button>
-
-                        <input type="number" id="buy-qty" name="quantity" min="1" th:max="${item.stockQuantity}" value="1"
-                               class="input-brutal" th:disabled="${item.stockQuantity == 0}"
-                               style="width: 60px; text-align: center; border-left: none; border-right: none;">
-
-                        <button type="button" class="qty-btn" onclick="updateQty(1)" th:disabled="${item.stockQuantity == 0}" style="border-left: none; margin-right: 20px;">+</button>
-
-                        <button type="submit" class="btn"
-                                style="flex: 1; height: 100%; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;"
-                                th:disabled="${item.stockQuantity == 0}"
-                                th:styleappend="${item.stockQuantity == 0 ? '; background: #ccc; cursor: not-allowed;' : ''}"
-                                th:text="${item.stockQuantity > 0} ? #{item.buy} : 'SOLD OUT'">
-                            BUY NOW
+                        <button type="button" id="fav-btn" class="btn-fav"
+                                th:classappend="${isFavorite} ? 'active' : ''"
+                                th:onclick="'toggleFavorite(' + ${item.id} + ')'"
+                                style="height: 100%; width: 65px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid black; background: white;">
+                            <span id="fav-icon" th:text="${isFavorite} ? '♥' : '♡'" style="font-size: 2rem;">♡</span>
                         </button>
-                    </form>
 
-                    <form th:action="@{/cart/add}" method="post"
-                          onsubmit="document.getElementById('hidden-cart-qty').value = document.getElementById('buy-qty').value">
+                        <div style="display: flex; flex: 1; gap: 15px; align-items: center; height: 100%;">
 
-                        <input type="hidden" name="itemId" th:value="${item.id}">
-                        <input type="hidden" name="quantity" id="hidden-cart-qty" value="1">
+                            <div style="display: flex; align-items: center; height: 100%;">
+                                <div class="qty-label" style="white-space: nowrap; margin-right: 10px;" th:text="#{item.quantity}">數量:</div>
+                                <button type="button" class="qty-btn" onclick="updateQty(-1)" th:disabled="${item.stockQuantity == 0}" style="height: 100%; border-right: none;">-</button>
+                                <input type="number" id="buy-qty" name="quantity" min="1" th:max="${item.stockQuantity}" value="1"
+                                       class="input-brutal" th:disabled="${item.stockQuantity == 0}"
+                                       style="width: 60px; height: 100%; text-align: center; border-left: none; border-right: none;">
+                                <button type="button" class="qty-btn" onclick="updateQty(1)" th:disabled="${item.stockQuantity == 0}" style="height: 100%; border-left: none;">+</button>
+                            </div>
 
-                        <button type="submit" class="btn"
-                                style="background: white; color: black; border: 2px solid black; height: 65px; width: 65px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"
-                                th:disabled="${item.stockQuantity == 0}"
-                                title="Add to Cart">
-                            🛒
-                        </button>
-                    </form>
-                </div>
+                            <form th:action="@{/cart/add}" method="post" style="height: 100%;"
+                                  onsubmit="document.getElementById('hidden-cart-qty').value = document.getElementById('buy-qty').value">
+                                <input type="hidden" name="itemId" th:value="${item.id}">
+                                <input type="hidden" name="quantity" id="hidden-cart-qty" value="1">
+                                <button type="submit" class="btn-fav"
+                                        style="background: white; color: black; border: 2px solid black; height: 100%; width: 65px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"
+                                        th:disabled="${item.stockQuantity == 0}">
+                                    🛒
+                                </button>
+                            </form>
+
+                            <form th:action="@{'/items/' + ${item.id} + '/buy'}" method="post" style="flex: 1; height: 100%;">
+                                <input type="hidden" name="quantity" onparentsubmit="this.value = document.getElementById('buy-qty').value" >
+
+                                <button type="submit" class="btn"
+                                        style="width: 100%; height: 100%; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;"
+                                        th:disabled="${(item.stockQuantity ?: 0) == 0}"
+                                        th:styleappend="${(item.stockQuantity ?: 0) == 0 ? '; background: #ff4444 !important; color: white !important; cursor: not-allowed; border-color: black;' : ''}"
+                                        th:text="${(item.stockQuantity ?: 0) > 0} ? #{item.buy} : 'SOLD OUT'">
+                                    BUY NOW
+                                </button>
+                            </form>
+                        </div>
+                    </div>
 
                     <div th:if="${#authentication.name == item.seller.email}"
                          style="text-align: center; margin-top: 15px; padding: 10px; background: #eee; color: #666; border: 1px dashed #ccc;">
@@ -325,65 +366,40 @@
     <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ddd;">
 
     <div class="reviews-section">
-        <h3>📝 商品評論</h3>
+        <h3 style="font-family: 'Archivo Black', sans-serif; text-transform: uppercase;" th:text="#{item.reviews.title}">Reviews</h3>
 
-        <div th:if="${reviews.empty}" style="color: #888; margin-bottom: 20px;">
-            目前還沒有評論，成為第一個評論的人吧！
+        <div th:if="${reviews.empty}" style="padding: 20px; border: 1px dashed black; text-align: center; color: #888;"
+             th:text="#{item.reviews.empty}">
+            NO REVIEWS YET. BE THE FIRST!
         </div>
 
-        <div th:each="review : ${reviews}"
-             style="background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px; position: relative;">
-
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; padding-right: 20px;">
-                <strong th:text="${review.user.name}">User</strong>
-                <span style="color: #f39c12;">
-                    <span th:text="${'★'.repeat(review.rating)}">★★★★★</span>
-                    <span th:text="${'☆'.repeat(5 - review.rating)}"></span>
-                </span>
+        <div th:each="review : ${reviews}" class="review-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 1.1rem; text-decoration: underline;" th:text="${review.user.name}">User</strong>
+                <span style="background: black; color: var(--highlight); padding: 2px 8px; font-weight: bold;">
+                <span th:text="${review.rating}">5</span>/5 ★
+            </span>
             </div>
-
-            <p th:text="${review.content}" style="margin: 0; color: #333;">評論內容</p>
-            <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}" style="color: #999;"></small>
-
-            <div th:if="${#authentication.name == review.user.email}"
-                 style="position: absolute; top: 5px; right: 5px;">
-
-                <form th:action="@{'/items/reviews/' + ${review.id} + '/delete'}" method="post">
-                    <button type="submit"
-                            style="background: none; border: none; color: #ccc; cursor: pointer; font-weight: bold; font-size: 1.2rem; padding: 0;"
-                            onclick="return confirm('確定要刪除這則評論嗎？');"
-                            title="刪除評論">
-                        ✕
-                    </button>
-                </form>
-            </div>
+            <p th:text="${review.content}" style="margin: 15px 0; line-height: 1.6; font-family: 'Space Mono', monospace;">評論內容</p>
+            <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}" style="color: #666;"></small>
         </div>
 
-        <div sec:authorize="isAuthenticated()" style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 20px;">
-            <h4>留下您的評論</h4>
+        <div sec:authorize="isAuthenticated()" class="review-form-container">
+            <h4 style="margin-top: 0; text-transform: uppercase;" th:text="#{item.reviews.leave}">Leave a Review</h4>
             <form th:action="@{'/items/' + ${item.id} + '/review'}" method="post">
-
-                <div style="margin-bottom: 10px;">
-                    <label>評分:</label>
-                    <select name="rating" style="padding: 5px;">
-                        <option value="5">★★★★★ (5分)</option>
-                        <option value="4">★★★★ (4分)</option>
-                        <option value="3">★★★ (3分)</option>
-                        <option value="2">★★ (2分)</option>
-                        <option value="1">★ (1分)</option>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold;">RATING:</label>
+                    <select name="rating">
+                        <option value="5">★★★★★ (5)</option>
+                        <option value="4">★★★★ (4)</option>
+                        <option value="3">★★★ (3)</option>
+                        <option value="2">★★ (2)</option>
+                        <option value="1">★ (1)</option>
                     </select>
                 </div>
-
-                <div style="margin-bottom: 10px;">
-                    <textarea name="content" rows="3" placeholder="寫下您對商品的看法..." required style="width: 100%; padding: 10px;"></textarea>
-                </div>
-
-                <button type="submit" class="btn">送出評論</button>
+                <textarea name="content" rows="4" th:placeholder="#{item.reviews.placeholder}" required style="width: 100%;"></textarea>
+                <button type="submit" class="btn" style="width: 200px;" th:text="#{item.reviews.submit}">POST REVIEW</button>
             </form>
-        </div>
-
-        <div sec:authorize="!isAuthenticated()" style="margin-top: 20px;">
-            <a href="/login" class="btn">登入後即可發表評論</a>
         </div>
     </div>
 </div>
