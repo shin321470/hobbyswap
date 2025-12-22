@@ -13,6 +13,63 @@
 
 <div class="navbar">
     <a href="/" class="logo">HobbySwap</a>
+
+    <div class="nav-links">
+        <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+
+            <a th:href="@{/forum}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.forum}">
+                💬 FORUM
+            </a>
+
+            <a th:href="@{/cart}" class="btn"
+               style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+               th:text="#{nav.cart}">
+                🛒 CART
+            </a>
+
+            <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <div class="lang-dropdown">
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+
+                <div style="height: 2px; background: black; margin: 0;"></div>
+
+                <a href="javascript:void(0)"
+                   onclick="document.getElementById('logout-form').submit();"
+                   style="color: red; font-weight: bold;"
+                   th:text="#{nav.logout}">LOGOUT</a>
+            </div>
+        </div>
+
+                <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;">
+            </form>
+            </span>
+
+            <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <a th:href="@{/login}" class="btn" style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
+
+            <div class="lang-dropdown">
+                <button class="lang-btn">
+                    <span>🌐 LANGUAGE ▼</span>
+                </button>
+                <div class="lang-content">
+                    <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+                    <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+                    <a th:href="@{?lang=ja}">日本語 [JP]</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="auth-container">

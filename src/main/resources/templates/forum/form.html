@@ -40,7 +40,7 @@
         .input-brutal,
         textarea.input-brutal {
             text-align: left !important;
-            padding-left: 15px;
+            padding-left: 30px;
         }
 
         select.input-brutal {
@@ -50,6 +50,10 @@
 
         .lang-dropdown {
             position: relative;
+            width: auto;
+        }
+
+        .action-box .lang-dropdown {
             width: 100%;
         }
 
@@ -95,6 +99,19 @@
         .lang-content a:last-child {
             border-bottom: none;
         }
+
+        ::placeholder {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            color: #999;
+            font-weight: normal;
+            opacity: 1;
+        }
+
+        .input-brutal {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -107,8 +124,8 @@
 
             <a th:href="@{/forum}" class="btn"
                style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
-               th:text="#{nav.forum}">
-                💬 FORUM
+               th:text="#{nav.back_forum}">
+                ← FORUM
             </a>
 
             <a th:href="@{/cart}" class="btn"
@@ -117,25 +134,46 @@
                 🛒 CART
             </a>
 
+
             <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
                 <div class="lang-dropdown">
-                    <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
-                      <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
-                      <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
-                    </button>
-                    <div class="lang-content">
-                        <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
-                        <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
-                        <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
-                        <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
-                    </div>
-                </div>
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
 
+                <div style="height: 2px; background: black; margin: 0;"></div>
+
+                <a href="javascript:void(0)"
+                   onclick="document.getElementById('logout-form').submit();"
+                   style="color: red; font-weight: bold;"
+                   th:text="#{nav.logout}">LOGOUT</a>
+            </div>
+        </div>
+
+                <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;">
+            </form>
             </span>
 
             <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
                 <a th:href="@{/login}" class="btn" style="height:40px; padding:0 15px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
             </span>
+
+            <div class="lang-dropdown">
+                <button class="lang-btn">
+                    <span>🌐 LANGUAGE ▼</span>
+                </button>
+                <div class="lang-content">
+                    <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+                    <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+                    <a th:href="@{?lang=ja}">日本語 [JP]</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -149,7 +187,7 @@
         <div style="margin-bottom: 25px;">
             <label th:text="#{forum.label.title}">標題 TITLE</label>
             <input type="text" th:field="*{title}" class="input-brutal" required
-                   th:placeholder="#{forum.placeholder.title}" style="width: 100%; height: 50px;">
+                   th:placeholder=" ' ' +#{forum.placeholder.title}" style="width: 100%; height: 50px;">
         </div>
 
         <div style="margin-bottom: 25px; position: relative; z-index: 500;">
@@ -173,30 +211,40 @@
         </div>
 
         <div style="margin-bottom: 25px; background: var(--highlight); padding: 20px; border: 2px solid black; box-shadow: 5px 5px 0px black; position: relative; z-index: 400;">
-            <label><span th:text="#{forum.label.link_item}">關聯商品</span></label>
+            <span th:text="#{forum.label.link_item}">關聯商品</span>
 
-            <input type="hidden" name="sharedItemId" id="selected-item">
+            <input type="hidden" name="sharedItemId" id="selected-item-id">
 
             <div class="lang-dropdown" style="width: 100%;">
-                <button type="button" class="lang-btn" style="width: 100%; background: white; border: 2px solid black; box-shadow: 4px 4px 0px #000; height: 45px;">
-                    <span id="item-display" th:text="#{forum.option.none}">-- 不關聯商品 --</span>
-                    <span>▼</span>
-                </button>
 
-                <div class="lang-content" style="width: 100%; border: 2px solid black;">
+                <div id="item-search-container"
+                     style="display: flex; gap: 10px; width: 100%;"
+                     th:data-msg-searching="#{forum.search.searching}"
+                     th:data-msg-no-result="#{forum.search.no_result}"
+                     th:data-msg-failed="#{forum.search.failed}"
+                     th:data-msg-cancel="#{forum.option.cancel}">
 
-                    <a href="javascript:void(0)"
-                       th:attr="data-value='', data-display=#{forum.option.none}"
-                       onclick="selectOption('item', this.getAttribute('data-value'), this.getAttribute('data-display'))"
-                       style="color: #666; font-size: 0.9rem;">
-                        (取消選擇 / None)
-                    </a>
+                    <div id="selected-item-display"
+                         th:text="#{forum.item.not_selected}"
+                         style="flex: 1; display: flex; align-items: center; padding-left: 15px; background: #eee; border: 2px solid black; font-family: 'Space Mono'; color: #666;">
+                        (尚未選擇)
+                    </div>
 
-                    <a th:each="item : ${myItems}"
-                       href="javascript:void(0)"
-                       th:attr="data-value=${item.id}, data-display=${item.title} + ' ($' + ${item.price} + ')'"
-                       onclick="selectOption('item', this.getAttribute('data-value'), this.getAttribute('data-display'))"
-                       th:text="${item.title} + ' ($' + ${item.price} + ')'">商品名稱</a>
+                    <input type="text" id="item-keyword"
+                           th:placeholder="' ' + #{forum.search.placeholder}"
+                           class="input-brutal"
+                           style="width: 180px; border: 2px solid black; height: 45px; padding-left: 15px;">
+
+                    <button type="button" onclick="searchItems()" class="btn"
+                            style="height: 45px; border: 2px solid black; color: black; padding: 0 15px; box-shadow: 2px 2px 0px #000;">
+                        🔍 GO
+                    </button>
+                </div>
+
+                <div id="search-results-dropdown" class="lang-content" style="width: 100%; border: 2px solid black; max-height: 200px; overflow-y: auto;">
+                    <div style="padding: 10px 15px; color: #999;" th:text="#{forum.search.hint}">
+                        請輸入關鍵字並搜尋...
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,6 +261,61 @@
     </form>
 </div>
 
+<footer class="footer">
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h4 th:text="#{footer.company}">COMPANY</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+                <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+                <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+                <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.service}">SERVICE</h4>
+            <ul class="footer-links">
+                <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+                <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+                <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+                <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.contact}">CONTACT US</h4>
+            <div class="contact-info">
+                <p><strong>TEL:</strong> 02-1234-5678</p>
+                <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+                <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+            </div>
+        </div>
+
+        <div class="footer-col">
+            <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+            <div class="social-links">
+                <a href="#">[ IG ]</a>
+                <a href="#">[ FB ]</a>
+                <a href="#">[ YT ]</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+
+        <div>
+            &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
+        </div>
+
+        <div class="payment-icons">
+            <span>VISA</span>
+            <span>MASTER</span>
+            <span>JCB</span>
+            <span>APPLE PAY</span>
+        </div>
+    </div>
+</footer>
 <script>
     function selectOption(type, value, displayText) {
         if (type === 'category') {
@@ -223,6 +326,86 @@
             document.getElementById('item-display').innerText = displayText;
         }
     }
+
+    function searchItems() {
+    const keyword = document.getElementById('item-keyword').value;
+    const dropdown = document.getElementById('search-results-dropdown');
+
+    const container = document.getElementById('item-search-container');
+    const msgSearching = container.getAttribute('data-msg-searching'); // 搜尋中...
+    const msgNoResult = container.getAttribute('data-msg-no-result'); // 找不到...
+    const msgFailed = container.getAttribute('data-msg-failed');     // 失敗...
+    const msgCancel = container.getAttribute('data-msg-cancel');     // 取消選擇...
+
+    if (!keyword.trim()) {
+        alert("Please enter keyword!");
+        return;
+    }
+
+    dropdown.innerHTML = `<div style="padding:10px 15px;">${msgSearching}</div>`;
+    dropdown.style.display = 'block';
+
+    fetch('/api/items/search?keyword=' + encodeURIComponent(keyword))
+        .then(response => response.json())
+        .then(data => {
+            dropdown.innerHTML = '';
+
+            const clearOption = document.createElement('a');
+            clearOption.href = "javascript:void(0)";
+            clearOption.style.color = "#666";
+            clearOption.innerText = msgCancel;
+            clearOption.onclick = function() { selectItem('', '(Start Over)'); };
+            dropdown.appendChild(clearOption);
+
+            if (data.length === 0) {
+                const noResult = document.createElement('div');
+                noResult.style.padding = "10px 15px";
+                noResult.innerText = msgNoResult;
+                dropdown.appendChild(noResult);
+            } else {
+                data.forEach(item => {
+                    const link = document.createElement('a');
+                    link.href = "javascript:void(0)";
+                    link.innerText = `${item.title} ($${item.price})`;
+                    link.onclick = function() {
+                        selectItem(item.id, `${item.title} ($${item.price})`);
+                    };
+                    dropdown.appendChild(link);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            dropdown.innerHTML = `<div style="padding:10px 15px; color:red;">${msgFailed}</div>`;
+        });
+}
+
+    function selectItem(id, title) {
+
+        document.getElementById('selected-item-id').value = id;
+
+        const display = document.getElementById('selected-item-display');
+        display.innerText = title;
+        if(id) {
+            display.style.background = "white";
+            display.style.color = "black";
+            display.style.fontWeight = "bold";
+        } else {
+            display.style.background = "#eee";
+            display.style.color = "#666";
+            display.style.fontWeight = "normal";
+        }
+
+        document.getElementById('search-results-dropdown').style.display = 'none';
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('search-results-dropdown');
+        const input = document.getElementById('item-keyword');
+        if (event.target !== input && event.target.closest('.lang-dropdown') === null) {
+            dropdown.style.display = 'none';
+        }
+    });
 </script>
 </body>
 </html>

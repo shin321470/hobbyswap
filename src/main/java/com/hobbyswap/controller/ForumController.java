@@ -2,6 +2,7 @@ package com.hobbyswap.controller;
 
 import com.hobbyswap.model.*;
 import com.hobbyswap.repository.*;
+import com.hobbyswap.service.PostService;
 import com.hobbyswap.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,42 +10,55 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
+import com.hobbyswap.model.ForumCategory;
 
 @Controller
 @RequestMapping("/forum")
 public class ForumController {
 
     @Autowired private ForumRepository forumRepository;
-    @Autowired private ItemRepository itemRepository; // 需要用來找使用者的商品
+    @Autowired private ItemRepository itemRepository;
     @Autowired private UserService userService;
     @Autowired private ForumCommentRepository commentRepository;
+    @Autowired private PostService postService;
 
-    // 論壇首頁
     @GetMapping
-    public String list(@RequestParam(required = false) ForumCategory category, Model model) {
+    public String list(@RequestParam(required = false) String category,
+                       @RequestParam(required = false) String keyword,
+                       Model model) {
+
         List<ForumPost> posts;
-        if (category != null) {
-            posts = forumRepository.findByCategoryOrderByCreatedAtDesc(category);
-            model.addAttribute("currentCategory", category);
-        } else {
-            posts = forumRepository.findAllByOrderByCreatedAtDesc();
+
+        if (keyword != null && !keyword.isEmpty()) {
+            posts = postService.searchPosts(keyword);
+            model.addAttribute("keyword", keyword);
+        }
+        else if (category != null && !category.isEmpty()) {
+            try {
+                ForumCategory catEnum = ForumCategory.valueOf(category);
+                posts = postService.getPostsByCategory(catEnum);
+                model.addAttribute("currentCategory", catEnum);
+            } catch (IllegalArgumentException e) {
+                posts = postService.getAllPosts();
+            }
+        }
+        else {
+            posts = postService.getAllPosts();
         }
 
         model.addAttribute("posts", posts);
-        model.addAttribute("categories", ForumCategory.values()); // 傳入所有分類給前端做 Tabs
+        model.addAttribute("categories", ForumCategory.values());
+
         return "forum/list";
     }
 
-    // 發表新文章頁面
     @GetMapping("/new")
     public String newPostForm(Model model, Principal principal) {
         model.addAttribute("post", new ForumPost());
         model.addAttribute("categories", ForumCategory.values());
 
-        // 撈出「當前使用者」正在販售的商品 (讓他在發文時可以選擇)
         User user = userService.findByEmail(principal.getName());
         List<Item> myItems = itemRepository.findBySellerAndStatus(user, "ON_SALE");
-        // 註：如果您的 ItemRepository 沒這個方法，可以用 findBySeller 代替，或在 Repo 加一下
 
         model.addAttribute("myItems", myItems);
         return "forum/form";
@@ -55,15 +69,13 @@ public class ForumController {
         ForumPost post = forumRepository.findById(id).orElse(null);
         if (post == null) return "redirect:/forum";
 
-        // 撈出這篇文章的所有評論
         List<ForumComment> comments = commentRepository.findByPostAndParentIsNullOrderByCreatedAtAsc(post);
 
         model.addAttribute("post", post);
         model.addAttribute("comments", comments);
-        return "forum/detail"; // 我們等一下要建立這個頁面
+        return "forum/detail";
     }
 
-    // 提交評論
     @PostMapping("/{id}/comment")
     public String addComment(@PathVariable Long id,
                              @RequestParam String content,
@@ -80,10 +92,9 @@ public class ForumController {
 
             commentRepository.save(comment);
         }
-        return "redirect:/forum/" + id; // 留言後重新整理該頁面
+        return "redirect:/forum/" + id;
     }
 
-    // 處理提交
     @PostMapping("/new")
     public String createPost(@ModelAttribute ForumPost post,
                              @RequestParam(required = false) Long sharedItemId,
@@ -92,7 +103,6 @@ public class ForumController {
         User user = userService.findByEmail(principal.getName());
         post.setAuthor(user);
 
-        // 如果有選擇分享商品
         if (sharedItemId != null) {
             itemRepository.findById(sharedItemId).ifPresent(post::setSharedItem);
         }
@@ -101,20 +111,14 @@ public class ForumController {
         return "redirect:/forum";
     }
 
-    // 刪除文章功能
     @PostMapping("/{id}/delete")
     public String deletePost(@PathVariable Long id, Principal principal) {
         ForumPost post = forumRepository.findById(id).orElse(null);
 
         if (post != null) {
-            // 權限檢查：只有「發文者本人」或「管理員」可以刪除
-            // principal.getName() 抓到的是登入者的 email
             boolean isAuthor = post.getAuthor().getEmail().equals(principal.getName());
-
-            // 這裡假設我們簡單判斷：如果是本人就可以刪
-            // (如果您希望管理員也能刪，可以多判斷 User role)
             if (isAuthor) {
-                forumRepository.delete(post); // 因為設了 Cascade，評論也會一起消失
+                forumRepository.delete(post);
             }
         }
         return "redirect:/forum";
@@ -122,37 +126,33 @@ public class ForumController {
 
     @PostMapping("/comments/{id}/delete")
     public String deleteComment(@PathVariable Long id, Principal principal) {
-        // 1. 找出評論
         ForumComment comment = commentRepository.findById(id).orElse(null);
 
         if (comment != null) {
-            // 2. 權限檢查：只有「留言者本人」可以刪除
             if (comment.getAuthor().getEmail().equals(principal.getName())) {
-                Long postId = comment.getPost().getId(); // 記住這篇文的 ID，等一下要跳轉回去
+                Long postId = comment.getPost().getId();
                 commentRepository.delete(comment);
-                return "redirect:/forum/" + postId; // 刪除後回到該文章頁面
+                return "redirect:/forum/" + postId;
             }
         }
         return "redirect:/forum";
     }
 
-    // 回覆別人的評論
     @PostMapping("/comments/{id}/reply")
     public String replyToComment(@PathVariable Long id,
                                  @RequestParam String content,
                                  Principal principal) {
 
-        // 找出「父評論」
         ForumComment parentComment = commentRepository.findById(id).orElse(null);
 
         if (parentComment != null && principal != null) {
             User user = userService.findByEmail(principal.getName());
 
             ForumComment reply = new ForumComment();
-            reply.setPost(parentComment.getPost()); // 屬於同一篇文章
+            reply.setPost(parentComment.getPost());
             reply.setAuthor(user);
             reply.setContent(content);
-            reply.setParent(parentComment); // ★ 設定父評論
+            reply.setParent(parentComment);
 
             commentRepository.save(reply);
 

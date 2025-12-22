@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ForumRepository extends JpaRepository<ForumPost, Long> {
-    // 根據分類找文章 (最新的在前面)
-    List<ForumPost> findByCategoryOrderByCreatedAtDesc(ForumCategory category);
+    List<ForumPost> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(String title, String content);
 
-    // 找所有文章 (最新的在前面)
-    List<ForumPost> findAllByOrderByCreatedAtDesc();
+    List<ForumPost> findByCategory(ForumCategory category);
 }
