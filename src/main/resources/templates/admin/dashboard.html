@@ -113,5 +113,51 @@
     </table>
 </div>
 
+<div class="admin-section" style="margin-top: 40px; border-top: 4px solid #c0392b; padding-top: 20px;">
+    <h2 style="color: #c0392b;">🚨 檢舉審核 (待處理)</h2>
+
+    <div th:if="${reports.empty}" style="color: #888;">目前沒有待處理的檢舉。</div>
+
+    <table class="admin-table" th:if="${!reports.empty}">
+        <thead>
+        <tr>
+            <th>檢舉時間</th>
+            <th>被檢舉商品</th>
+            <th>檢舉人</th>
+            <th>理由</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="rpt : ${reports}">
+            <td th:text="${#temporals.format(rpt.createdAt, 'yyyy-MM-dd HH:mm')}">Date</td>
+            <td>
+                <a th:href="@{'/items/' + ${rpt.item.id}}" target="_blank" th:text="${rpt.item.title}">Item</a>
+                <span style="font-size: 0.8rem; color: #666;" th:text="'(賣家: ' + ${rpt.item.seller.name} + ')'">Seller</span>
+            </td>
+            <td th:text="${rpt.reporter.name}">Reporter</td>
+            <td th:text="${rpt.reason}" style="color: #c0392b; font-weight: bold;">Reason</td>
+            <td>
+                <div style="display: flex; gap: 10px;">
+                    <form th:action="@{'/admin/reports/' + ${rpt.id} + '/handle'}" method="post">
+                        <input type="hidden" name="action" value="BAN">
+                        <button type="submit" class="btn-danger" onclick="return confirm('確定要下架此商品並結案嗎？')">
+                            🔨 下架商品
+                        </button>
+                    </form>
+
+                    <form th:action="@{'/admin/reports/' + ${rpt.id} + '/handle'}" method="post">
+                        <input type="hidden" name="action" value="DISMISS">
+                        <button type="submit" class="btn" style="background: #ccc; color: black;" onclick="return confirm('確定要駁回此檢舉嗎？(商品將保留)')">
+                            ✕ 駁回
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>

@@ -1,7 +1,9 @@
 package com.hobbyswap.controller;
 
 import com.hobbyswap.model.Item;
+import com.hobbyswap.model.Report;
 import com.hobbyswap.model.User;
+import com.hobbyswap.repository.ReportRepository;
 import com.hobbyswap.service.ItemService;
 import com.hobbyswap.service.UserService;
 import com.hobbyswap.model.Review;
@@ -31,6 +33,7 @@ public class ItemController {
     @Autowired private UserService userService;
     @Autowired private com.hobbyswap.repository.UserRepository userRepository;
     @Autowired private ReviewRepository reviewRepository;
+    @Autowired private ReportRepository reportRepository;
 
     // 首頁 (包含搜尋邏輯)
     @GetMapping("/")
@@ -178,5 +181,24 @@ public class ItemController {
             }
         }
         return "redirect:/"; // 如果出錯，回首頁
+    }
+
+    // 提交檢舉
+    @PostMapping("/items/{id}/report")
+    public String reportItem(@PathVariable Long id,
+                             @RequestParam String reason,
+                             Principal principal) {
+        Item item = itemService.findById(id);
+        if (item != null && principal != null) {
+            User reporter = userService.findByEmail(principal.getName());
+
+            Report report = new Report();
+            report.setItem(item);
+            report.setReporter(reporter);
+            report.setReason(reason);
+            reportRepository.save(report);
+        }
+        // 檢舉完回到該商品頁，可以加個參數讓前端顯示「檢舉成功」
+        return "redirect:/items/" + id + "?reported=true";
     }
 }

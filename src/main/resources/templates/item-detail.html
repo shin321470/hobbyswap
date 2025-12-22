@@ -213,7 +213,10 @@
         </div>
 
         <div class="product-info-area">
-
+            <div th:if="${param.reported}"
+                 style="background: #d4edda; color: #155724; padding: 15px; border: 2px solid #155724; font-weight: bold; margin-bottom: 10px;">
+                ✅ 感謝您的檢舉！我們會盡快審核。
+            </div>
             <h1 class="product-title" th:text="${item.title}">商品名稱</h1>
 
             <div class="product-price-box">
@@ -359,6 +362,35 @@
                  style="background: #f0f0f0; border-color: #ccc;">
                 <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
             </div>
+
+            <div style="margin-top: 30px; text-align: right; border-top: 2px solid #eee; padding-top: 15px;">
+                <span style="font-size: 0.8rem; color: #666; margin-right: 10px;">發現商品有問題？</span>
+
+                <button type="button"
+                        onclick="document.getElementById('report-form').style.display='block'"
+                        style="background: none; border: none; color: #c0392b; text-decoration: underline; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.9rem; font-weight: bold;">
+                    🚨 檢舉此商品 / REPORT
+                </button>
+
+                <div id="report-form" style="display: none; margin-top: 15px; background: #fff0f0; border: 2px solid #c0392b; padding: 20px; text-align: left;">
+                    <form th:action="@{'/items/' + ${item.id} + '/report'}" method="post">
+                        <h4 style="margin-top: 0; color: #c0392b; text-transform: uppercase; margin-bottom: 15px;">Report Item</h4>
+
+                        <div style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; font-size: 0.95rem;">
+                            <label style="cursor: pointer;"><input type="radio" name="reason" value="仿冒品" required> 仿冒品 (Counterfeit)</label>
+                            <label style="cursor: pointer;"><input type="radio" name="reason" value="詐騙/廣告"> 詐騙 / 廣告 (Scam/Spam)</label>
+                            <label style="cursor: pointer;"><input type="radio" name="reason" value="禁止販售商品"> 禁止販售商品 (Prohibited)</label>
+                            <label style="cursor: pointer;"><input type="radio" name="reason" value="其他"> 其他 (Other)</label>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn" style="background: #c0392b; color: white; border: none; flex: 1; height: 40px;">提交</button>
+                            <button type="button" onclick="document.getElementById('report-form').style.display='none'" class="btn" style="background: #ccc; border: none; color: black; flex: 1; height: 40px;">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         </div>
     </div>
