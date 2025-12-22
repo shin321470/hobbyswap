@@ -2,6 +2,7 @@ package com.hobbyswap.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "forum_comments")
@@ -27,6 +28,21 @@ public class ForumComment {
     public ForumComment() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private ForumComment parent;
+
+    // 子回覆列表 (誰在回覆我？)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt ASC") // 讓回覆依照時間排序
+    private List<ForumComment> replies;
+
+    // Getter & Setter
+    public ForumComment getParent() { return parent; }
+    public void setParent(ForumComment parent) { this.parent = parent; }
+    public List<ForumComment> getReplies() { return replies; }
+    public void setReplies(List<ForumComment> replies) { this.replies = replies; }
 
     // Getter & Setter
     public Long getId() { return id; }

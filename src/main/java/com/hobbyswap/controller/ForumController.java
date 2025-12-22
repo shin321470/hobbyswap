@@ -56,7 +56,7 @@ public class ForumController {
         if (post == null) return "redirect:/forum";
 
         // 撈出這篇文章的所有評論
-        List<ForumComment> comments = commentRepository.findByPostOrderByCreatedAtAsc(post);
+        List<ForumComment> comments = commentRepository.findByPostAndParentIsNullOrderByCreatedAtAsc(post);
 
         model.addAttribute("post", post);
         model.addAttribute("comments", comments);
@@ -132,6 +132,31 @@ public class ForumController {
                 commentRepository.delete(comment);
                 return "redirect:/forum/" + postId; // 刪除後回到該文章頁面
             }
+        }
+        return "redirect:/forum";
+    }
+
+    // 回覆別人的評論
+    @PostMapping("/comments/{id}/reply")
+    public String replyToComment(@PathVariable Long id,
+                                 @RequestParam String content,
+                                 Principal principal) {
+
+        // 找出「父評論」
+        ForumComment parentComment = commentRepository.findById(id).orElse(null);
+
+        if (parentComment != null && principal != null) {
+            User user = userService.findByEmail(principal.getName());
+
+            ForumComment reply = new ForumComment();
+            reply.setPost(parentComment.getPost()); // 屬於同一篇文章
+            reply.setAuthor(user);
+            reply.setContent(content);
+            reply.setParent(parentComment); // ★ 設定父評論
+
+            commentRepository.save(reply);
+
+            return "redirect:/forum/" + parentComment.getPost().getId();
         }
         return "redirect:/forum";
     }

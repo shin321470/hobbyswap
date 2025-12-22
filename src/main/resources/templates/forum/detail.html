@@ -69,17 +69,20 @@
   <div class="comment-section">
     <h3>💬 COMMENTS (<span th:text="${comments.size()}">0</span>)</h3>
 
+    <div th:if="${comments.isEmpty()}" style="color: #999; font-style: italic; margin-bottom: 20px;">
+      目前還沒有評論，搶頭香吧！
+    </div>
+
     <div th:each="comment : ${comments}" class="comment-box" style="position: relative;">
 
       <div>
-        <span class="comment-author" th:text="${comment.author.name}">路人A</span>
-        <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">2023-12-20</span>
+        <span class="comment-author" th:text="${comment.author.name}">User</span>
+        <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
       </div>
       <div th:text="${comment.content}" style="margin-top: 5px; white-space: pre-wrap;">評論內容...</div>
 
       <div th:if="${#authentication.name == comment.author.email}"
            style="position: absolute; top: 10px; right: 10px;">
-
         <form th:action="@{'/forum/comments/' + ${comment.id} + '/delete'}" method="post">
           <button type="submit"
                   style="background: none; border: none; color: #999; cursor: pointer; font-weight: bold; font-size: 1.1rem;"
@@ -90,16 +93,44 @@
         </form>
       </div>
 
-    </div>
+      <div th:if="${!comment.replies.empty}"
+           style="margin-left: 30px; margin-top: 15px; padding-left: 15px; border-left: 3px solid #eee; background: #fff;">
 
-    <div th:if="${comments.isEmpty()}" style="color: #999; font-style: italic; margin-bottom: 20px;">
-      目前還沒有評論，搶頭香吧！
-    </div>
+        <div th:each="reply : ${comment.replies}" style="margin-bottom: 10px; position: relative; padding: 5px 0;">
+          <div style="font-size: 0.9rem;">
+            <span style="font-weight:bold; color:#555;" th:text="${reply.author.name}">ReplyUser</span>
+            <span style="font-size: 0.8rem; color:#aaa;" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
+          </div>
+          <div th:text="${reply.content}" style="font-size: 0.95rem; margin-top: 2px;">回覆內容</div>
 
-    <div th:if="${#authentication.name != 'anonymousUser'}" style="margin-top: 20px;">
+          <div th:if="${#authentication.name == reply.author.email}" style="position: absolute; top: 0; right: 0;">
+            <form th:action="@{'/forum/comments/' + ${reply.id} + '/delete'}" method="post">
+              <button type="submit" style="background:none; border:none; cursor:pointer; color:#ccc; font-weight:bold;">✕</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div th:if="${#authentication.name != 'anonymousUser'}" style="margin-top: 10px;">
+
+        <button type="button" class="btn-sm"
+                style="background: #f0f0f0; color: black; border: 1px solid #ccc; font-size: 0.8rem; padding: 2px 8px; cursor: pointer;"
+                th:onclick="'document.getElementById(\'reply-form-' + ${comment.id} + '\').style.display = \'block\''">
+          ↪ 回覆
+        </button>
+
+        <div th:id="'reply-form-' + ${comment.id}" style="display: none; margin-top: 10px; margin-left: 20px;">
+          <form th:action="@{'/forum/comments/' + ${comment.id} + '/reply'}" method="post" style="display: flex; gap: 10px;">
+            <input type="text" name="content" class="input-brutal" placeholder="回應這則評論..." required style="flex: 1; height: 35px;">
+            <button type="submit" class="btn" style="height: 35px; padding: 0 15px; font-size: 0.8rem;">送出</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div th:if="${#authentication.name != 'anonymousUser'}" style="margin-top: 20px; border-top: 2px solid #000; padding-top: 20px;">
+      <h4>發表新評論</h4>
       <form th:action="@{'/forum/' + ${post.id} + '/comment'}" method="post">
         <textarea name="content" rows="3" class="input-brutal" placeholder="分享您的看法..." required style="width: 100%; margin-bottom: 10px;"></textarea>
-        <button type="submit" class="btn" style="width: 100%;">送出評論</button>
+        <button type="submit" class="btn" style="width: 100%;">送出主評論</button>
       </form>
     </div>
 
@@ -107,7 +138,6 @@
       <a href="/login" class="btn" style="display: inline-block;">登入以參與討論</a>
     </div>
   </div>
-
 </div>
 </body>
 </html>

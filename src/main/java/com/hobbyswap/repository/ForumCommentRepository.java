@@ -8,4 +8,5 @@ import java.util.List;
 public interface ForumCommentRepository extends JpaRepository<ForumComment, Long> {
     // 根據帖子搜尋評論，並依照時間舊->新排序 (讓對話有順序)
     List<ForumComment> findByPostOrderByCreatedAtAsc(ForumPost post);
+    List<ForumComment> findByPostAndParentIsNullOrderByCreatedAtAsc(ForumPost post);
 }
