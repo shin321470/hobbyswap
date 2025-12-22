@@ -2,71 +2,309 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>社群論壇 - HobbySwap</title>
+  <title th:text="#{forum.list.title} + ' - HobbySwap'">社群論壇 - HobbySwap</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    .category-nav { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-    .cat-link { text-decoration: none; color: #888; font-weight: bold; padding: 5px 10px; }
-    .cat-link.active { color: var(--text-main); background: var(--highlight); border: 2px solid black; }
+    .forum-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-    .post-card { border: 2px solid black; margin-bottom: 20px; padding: 20px; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 200px; gap: 20px; }
-    .post-tag { background: black; color: white; padding: 2px 8px; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; }
+    .forum-page-header {
+        width: 960px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        border-bottom: 4px solid black;
+        padding-bottom: 20px;
+    }
 
-    /* 關聯商品的小卡片 */
-    .shared-item-box { border: 1px solid #ccc; padding: 10px; text-align: center; background: #fafafa; }
-    .shared-item-box img { width: 80px; height: 80px; object-fit: cover; margin-bottom: 5px; }
-    .shared-item-box a { text-decoration: none; color: black; font-weight: bold; font-size: 0.9rem; }
+    .forum-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        margin: 0;
+    }
 
-    @media (max-width: 768px) { .post-card { grid-template-columns: 1fr; } }
+    .category-nav {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+    }
+
+    .cat-link {
+        text-decoration: none;
+        color: black;
+        font-weight: bold;
+        padding: 10px 20px;
+        border: 2px solid black;
+        font-family: 'Space Mono', monospace;
+        transition: all 0.1s;
+        background: white;
+        box-shadow: 4px 4px 0px #ccc;
+    }
+
+    .cat-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 6px 6px 0px #000;
+    }
+
+    .cat-link.active {
+        background: black;
+        color: var(--highlight);
+        box-shadow: 4px 4px 0px var(--highlight);
+    }
+
+    .post-card {
+        width : 960px;
+        border: 2px solid black;
+        background: white;
+        margin-bottom: 15px;
+        padding: 25px;
+        box-shadow: 6px 6px 0px #000;
+        display: grid;
+        grid-template-columns: 1fr 140px;
+        gap: 20px;
+        text-decoration: none;
+        color: black;
+        transition: transform 0.1s;
+        position: relative;
+    }
+
+    .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 8px 8px 0px var(--highlight);
+        border-color: black;
+    }
+
+    .post-main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0; /* 防止 flex item 撐爆 */
+    }
+
+    .post-meta-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 10px;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .post-category-tag {
+        background: var(--highlight);
+        color: black;
+        padding: 2px 8px;
+        font-weight: bold;
+        border: 1px solid black;
+        font-size: 0.75rem;
+    }
+
+    .post-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.5rem;
+        margin: 0 0 10px 0;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .post-excerpt {
+        color: #444;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+    }
+
+    .post-footer {
+        margin-top: 15px;
+        display: flex;
+        gap: 20px;
+        font-size: 0.85rem;
+        color: #888;
+        font-family: 'Space Mono';
+        align-items: center;
+    }
+
+    .post-thumbnail {
+        width: 140px;
+        height: 140px;
+        border: 2px solid black;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .post-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .thumbnail-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: black;
+        color: white;
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        font-family: 'Space Mono';
+    }
+
+    .lang-dropdown { width: auto; }
+    .action-box .lang-dropdown { width: 100%; }
+
+    .lang-btn { display: flex; align-items: center; padding-left: 15px !important; text-align: left !important; font-family: 'Space Mono', monospace; }
+    .lang-content { position: absolute; top: 100%; left: 0; min-width: 100%; background-color: white; border: 2px solid black; border-top: none; z-index: 1000; display: none; }
+    .lang-dropdown:hover .lang-content { display: block; }
+    .lang-content a { display: block; padding: 10px 15px; text-decoration: none; color: black; border-bottom: 1px solid #eee; font-family: 'Space Mono', monospace; cursor: pointer; }
+    .lang-content a:hover { background-color: #000; color: #fff; }
   </style>
 </head>
 <body>
+
 <div class="navbar">
-  <a href="/" class="logo">HobbySwap</a>
+  <a th:href="@{/}" class="logo">HobbySwap</a>
+
+  <form action="/forum" method="get" class="search-form" style="margin-left: 30px;">
+    <input type="text" name="keyword" th:placeholder="#{forum.searchpost.placeholder}" th:value="${keyword}">
+    <button type="submit" th:text="#{search.btn}">GO</button>
+  </form>
+
   <div class="nav-links">
-    <a th:href="@{/forum/new}" class="btn">＋ 發新話題</a>
+    <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+      <a th:href="@{/cart}" class="btn"
+         style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+         th:text="#{nav.cart}">
+        🛒 CART
+      </a>
+
+      <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <div class="lang-dropdown">
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+
+                <div style="height: 2px; background: black; margin: 0;"></div>
+
+                <a href="javascript:void(0)"
+                   onclick="document.getElementById('logout-form').submit();"
+                   style="color: red; font-weight: bold;"
+                   th:text="#{nav.logout}">LOGOUT</a>
+            </div>
+        </div>
+
+                <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;">
+            </form>
+            </span>
+
+      <span th:if="${#authentication.principal == 'anonymousUser'}">
+                <a th:href="@{/login}" class="btn" th:text="#{nav.login}">LOGIN</a>
+            </span>
+
+      <div class="lang-dropdown">
+        <button class="lang-btn">
+          <span>🌐 LANGUAGE ▼</span>
+        </button>
+        <div class="lang-content">
+          <a th:href="@{''(lang='zh_TW')}">繁體中文 [TW]</a>
+          <a th:href="@{''(lang='en')}">ENGLISH [EN]</a>
+          <a th:href="@{''(lang='ja')}">日本語 [JP]</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="container">
-  <h1>💬 COMMUNITY FORUM</h1>
+<div class="forum-container">
 
-  <div class="category-nav">
-    <a th:href="@{/forum}" class="cat-link" th:classappend="${currentCategory == null} ? 'active'">全部</a>
-    <a th:each="cat : ${categories}"
-       th:href="@{/forum(category=${cat})}"
-       class="cat-link"
-       th:classappend="${currentCategory == cat} ? 'active'"
-       th:text="${cat.display}">科技</a>
+  <div class="forum-page-header">
+    <h1 class="forum-title">💬 <span th:text="#{forum.list.header}">COMMUNITY</span></h1>
+
+    <a th:href="@{/forum/new}" class="btn" th:text="#{forum.btn.create}">
+      START A TOPIC
+    </a>
   </div>
 
-  <div th:each="post : ${posts}" class="post-card">
+    <div class="category-nav">
+        <a th:href="@{/forum}" class="cat-link"
+           th:classappend="${currentCategory == null} ? 'active'"
+           th:text="#{forum.category.all}">ALL</a>
 
-    <div>
-      <span class="post-tag" th:text="${post.category.display}">分類</span>
-      <h3 style="margin: 5px 0;">
-        <a th:href="@{'/forum/' + ${post.id}}" th:text="${post.title}" style="text-decoration: none; color: black;">
-          文章標題
+        <a th:each="cat : ${categories}"
+           th:href="@{/forum(category=${cat})}"
+           class="cat-link"
+           th:classappend="${currentCategory == cat} ? 'active'"
+
+           th:text="#{'forum.category.' + ${cat.name()}}">
+            CategoryName
         </a>
-      </h3>
-      <div style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
-        by <span th:text="${post.author.name}">User</span>
-        at <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">Date</span>
-      </div>
-      <p th:text="${post.content}" style="white-space: pre-wrap; color: #333;">內容...</p>
     </div>
 
-    <div th:if="${post.sharedItem != null}">
-      <div class="shared-item-box">
-        <div style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">MENTIONED ITEM</div>
-        <img th:if="${post.sharedItem.imageName != null}" th:src="@{'/uploads/' + ${post.sharedItem.imageName}}">
-        <br>
-        <a th:href="@{'/items/' + ${post.sharedItem.id}}" th:text="${post.sharedItem.title}">商品名稱</a>
-        <div style="color: var(--highlight); font-weight: bold;" th:text="'$' + ${post.sharedItem.price}">$100</div>
+  <a th:each="post : ${posts}" th:href="@{'/forum/' + ${post.id}}" class="post-card">
+
+    <div class="post-main">
+      <div class="post-meta-header">
+        <div style="width:24px; height:24px; background:black; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.7rem;"
+             th:text="${#strings.substring(post.author.name, 0, 1).toUpperCase()}">A</div>
+
+        <span style="font-weight:bold; color:black;" th:text="${post.author.name}">User</span>
+        <span>•</span>
+        <span th:text="${#temporals.format(post.createdAt, 'MM/dd')}">Date</span>
+
+        <span class="post-category-tag" th:text="${post.category.display}">Tech</span>
+      </div>
+
+      <h3 class="post-title" th:text="${post.title}">Post Title</h3>
+
+      <p class="post-excerpt" th:text="${post.content}">Content preview...</p>
+
+      <div class="post-footer">
+        <span th:text="#{forum.card.read_more}">Read More →</span>
+
+        <span th:if="${post.sharedItem != null}" style="display:flex; align-items:center; gap:5px; color:black; font-weight:bold;">
+                    📦 <span th:text="#{forum.card.has_item}">Linked Item</span>
+                </span>
       </div>
     </div>
 
-  </div>
+    <div class="post-thumbnail" th:if="${post.sharedItem != null}">
+      <img th:if="${post.sharedItem.imageName != null}" th:src="@{'/uploads/' + ${post.sharedItem.imageName}}">
+      <span th:if="${post.sharedItem.imageName == null}" style="font-size:0.7rem; text-align:center; padding:5px;">NO IMAGE</span>
+
+      <div class="thumbnail-badge" th:text="'$' + ${post.sharedItem.price}">$999</div>
+    </div>
+
+    <div class="post-thumbnail" th:if="${post.sharedItem == null}" style="background: white; border: 2px dashed #ccc; border-color: #eee;">
+      <span style="font-size: 2rem; color: #eee;"></span>
+    </div>
+
+  </a>
 </div>
+
 </body>
 </html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{checkout.title} + ' - HobbySwap'">結帳確認 - HobbySwap</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .checkout-container {
+        width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        border-bottom: 4px solid black;
+        padding-bottom: 20px;
+        margin-bottom: 40px;
+    }
+
+    .page-title {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 20px;
+    }
+
+    .form-section {
+        width: 100%;
+        height: 100%;
+        background: white;
+        border: 2px solid black;
+        padding: 30px;
+        box-shadow: 6px 6px 0px #000;
+        box-sizing: border-box;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        font-family: 'Space Mono', monospace;
+        font-weight: bold;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+
+    .input-brutal {
+        width: 100%;
+        padding: 15px;
+        padding-left: 25px; /* 您之前設定的左邊距 */
+        border: 2px solid black;
+        font-family: 'Space Mono', monospace;
+        background: #fff;
+        box-sizing: border-box;
+        text-align: left;
+        font-size: 1rem;
+        color: #000;
+    }
+
+    .input-brutal:focus {
+        outline: none;
+        border-color: var(--highlight);
+        box-shadow: 4px 4px 0px #000;
+    }
+
+    .summary-card {
+        background: var(--highlight);
+        border: 2px solid black;
+        padding: 30px;
+        box-shadow: 8px 8px 0px #000;
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .summary-card > div:nth-last-child(2) {
+        margin-top: auto;
+    }
+
+    .summary-header {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.5rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid black;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        font-family: 'Space Mono', monospace;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .summary-item .name {
+        flex: 1;
+        margin-right: 15px;
+        word-break: break-word;
+    }
+
+    .summary-item .price {
+        white-space: nowrap;
+        font-weight: bold;
+    }
+
+    .summary-total {
+        border-top: 2px solid black;
+        padding-top: 20px;
+        margin-top: auto;
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.8rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-confirm {
+        width: 100%;
+        background: black;
+        color: white;
+        border: none;
+        padding: 20px;
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 1.2rem;
+        margin-top: 20px;
+        cursor: pointer;
+        text-transform: uppercase;
+        box-shadow: 4px 4px 0px white;
+        transition: transform 0.1s;
+    }
+
+    .btn-confirm:hover {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px white;
+    }
+
+    .lang-dropdown { width: auto; position: relative; }
+    .lang-btn { display: flex; align-items: center; padding-left: 15px !important; text-align: left !important; font-family: 'Space Mono', monospace; background: white; cursor: pointer; }
+    .lang-content { position: absolute; top: 100%; left: 0; min-width: 100%; background-color: white; border: 2px solid black; border-top: none; z-index: 1000; display: none; }
+    .lang-dropdown:hover .lang-content { display: block; }
+    .lang-content a { display: block; padding: 10px 15px; text-decoration: none; color: black; border-bottom: 1px solid #eee; font-family: 'Space Mono', monospace; cursor: pointer; }
+    .lang-content a:hover { background-color: #000; color: #fff; }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <a th:href="@{/}" class="logo">HobbySwap</a>
+
+  <form action="/" method="get" class="search-form">
+    <input type="text" name="keyword"
+           th:placeholder="#{search.placeholder}"
+           th:value="${keyword}">
+    <button type="submit" th:text="#{search.btn}">GO</button>
+  </form>
+
+  <div class="nav-links">
+    <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+      <a th:href="@{/forum}" class="btn" style="border: 2px solid black; box-shadow: 3px 3px 0px #000;" th:text="#{nav.forum}">💬 FORUM</a>
+      <a th:href="@{/cart}" class="btn" style="border: 2px solid black; box-shadow: 3px 3px 0px #000;" th:text="#{nav.cart}">🛒 CART</a>
+
+      <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+         <div class="lang-dropdown">
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+                <div style="height: 2px; background: black; margin: 0;"></div>
+                <a href="javascript:void(0)" onclick="document.getElementById('logout-form').submit();" style="color: red; font-weight: bold;" th:text="#{nav.logout}">LOGOUT</a>
+            </div>
+        </div>
+        <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;"></form>
+      </span>
+
+      <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+          <a th:href="@{/login}" class="btn" style="border: 2px solid black;" th:text="#{nav.login}">LOGIN</a>
+      </span>
+
+      <div class="lang-dropdown">
+        <button class="lang-btn"><span>🌐 LANGUAGE ▼</span></button>
+        <div class="lang-content">
+          <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+          <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+          <a th:href="@{?lang=ja}">日本語 [JP]</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="checkout-container">
+
+  <div class="page-header">
+    <h1 class="page-title" th:text="#{checkout.title}">CHECKOUT</h1>
+    <a th:href="@{/cart}" style="color: #666; text-decoration: none; font-family: 'Space Mono'; font-weight: bold;">
+      ← <span th:text="#{checkout.back_cart}">BACK TO CART</span>
+    </a>
+  </div>
+
+  <form th:action="${isDirectBuy} ? @{/checkout/direct/confirm} : @{/checkout/confirm}"
+        method="post" class="checkout-layout">
+
+    <div class="form-section">
+
+      <div th:if="${isDirectBuy}">
+        <input type="hidden" name="itemId" th:value="${directItemId}">
+        <input type="hidden" name="quantity" th:value="${directQuantity}">
+      </div>
+
+      <h3 style="font-family: 'Archivo Black'; margin-top: 0; margin-bottom: 25px; text-decoration: underline;" th:text="#{checkout.shipping_info}">SHIPPING INFO</h3>
+
+      <div class="form-group">
+        <label class="form-label" th:text="#{checkout.label.name}">RECEIVER NAME</label>
+        <input type="text" name="receiverName" class="input-brutal" required
+               th:placeholder="' '+#{checkout.placeholder.name}" th:value="${user.name}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" th:text="#{checkout.label.phone}">PHONE NUMBER</label>
+        <input type="tel" name="phone" class="input-brutal" required
+               th:placeholder="' '+#{checkout.placeholder.phone}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" th:text="#{checkout.label.address}">SHIPPING ADDRESS</label>
+        <input type="text" name="address" class="input-brutal" required
+               th:placeholder="' '+#{checkout.placeholder.address}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" th:text="#{checkout.label.payment}">PAYMENT METHOD</label>
+        <select name="payment" class="input-brutal" style="height: 50px; cursor: pointer;" required>
+          <option value="" disabled selected>&nbsp;&nbsp;選擇付款方式 ▼ / SELECT PAYMENT</option>
+          <option value="CREDIT">&nbsp;💳 Credit Card (Visa/Master)</option>
+          <option value="ATM">&nbsp;🏧 ATM Transfer</option>
+          <option value="COD">&nbsp;🚚 Cash On Delivery</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 30px; font-family: 'Space Mono';">
+        <label style="display: flex; align-items: center; cursor: pointer; width: 100%;">
+          <input type="checkbox" required
+                 style="width: 20px; height: 20px; accent-color: black; cursor: pointer; margin: 0 12px 0 0; padding: 0; flex-shrink: 0; border: 2px solid black;">
+          <span style="font-size: 0.9rem; line-height: 1.2; padding-top: 2px;" th:text="#{checkout.note}">
+          * 點擊確認即代表同意我們的服務條款。
+        </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-header" th:text="#{checkout.summary}">ORDER SUMMARY</div>
+
+      <div th:each="item : ${cart.items}" class="summary-item">
+        <span class="name" th:text="${item.item.title} + ' x' + ${item.quantity}">Long Product Name x1</span>
+        <span class="price" th:text="'$ ' + ${item.subTotal}">$100</span>
+      </div>
+
+      <div class="summary-item" style="color: #666; border-top: 1px dashed black; padding-top: 10px; margin-top: 10px;">
+        <span class="name" th:text="#{checkout.shipping_fee}">Shipping Fee</span>
+        <span class="price">$ 60</span>
+      </div>
+
+      <div class="summary-total">
+        <span th:text="#{cart.total}">TOTAL</span>
+        <span th:text="'$ ' + (${cart.totalPrice} + 60)">$560</span>
+      </div>
+
+      <button type="submit" class="btn-confirm" th:text="#{checkout.btn.confirm}">
+        CONFIRM ORDER
+      </button>
+    </div>
+  </form>
+</div>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4 th:text="#{footer.company}">COMPANY</h4>
+      <ul class="footer-links">
+        <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+        <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+        <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+        <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 th:text="#{footer.service}">SERVICE</h4>
+      <ul class="footer-links">
+        <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+        <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+        <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+        <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 th:text="#{footer.contact}">CONTACT US</h4>
+      <div class="contact-info">
+        <p><strong>TEL:</strong> 02-1234-5678</p>
+        <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+        <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+      <div class="social-links">
+        <a href="#">[ IG ]</a>
+        <a href="#">[ FB ]</a>
+        <a href="#">[ YT ]</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="copyright">
+
+    <div>
+      &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
+    </div>
+
+    <div class="payment-icons">
+      <span>VISA</span>
+      <span>MASTER</span>
+      <span>JCB</span>
+      <span>APPLE PAY</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

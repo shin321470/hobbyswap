@@ -28,17 +28,15 @@ public class ForumPost {
 
     @ManyToOne
     @JoinColumn(name = "item_id")
-    private Item sharedItem; // (選填) 分享的商品
+    private Item sharedItem;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ForumComment> comments;
 
-    // 建構子
     public ForumPost() {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getter & Setter (請務必生成)
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }

@@ -20,7 +20,8 @@ public class CartItem {
 
     private int quantity;
 
-    public CartItem() {}
+    public CartItem() {
+    }
 
     public CartItem(Cart cart, Item item, int quantity) {
         this.cart = cart;
@@ -28,18 +29,22 @@ public class CartItem {
         this.quantity = quantity;
     }
 
-    // 計算小計 (單價 * 數量)
-    public Double getSubTotal() {
-        return item.getPrice() * quantity;
-    }
-
-    // Getter & Setter
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public Cart getCart() { return cart; }
     public void setCart(Cart cart) { this.cart = cart; }
+
     public Item getItem() { return item; }
     public void setItem(Item item) { this.item = item; }
+
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
+
+    public Double getSubTotal() {
+        if (item == null || item.getPrice() == null) {
+            return 0.0;
+        }
+        return item.getPrice() * quantity;
+    }
 }

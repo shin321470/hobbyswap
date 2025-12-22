@@ -967,3 +967,11 @@ org.h2.jdbc.JdbcSQLNonTransientConnectionException: Database is already closed (
 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
 	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+2025-12-23 00:18:12.959417+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM CART_ITEMS FORUM_COMMENTS [*]ORDER_ITEMS"; SQL statement:
+SELECT * FROM CART_ITEMS FORUM_COMMENTS ORDER_ITEMS [42000-232]
+2025-12-23 00:23:10.310860+08:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE ITEMS \000d\000aSET CATEGORY='ELETRONICS'\000d\000aWHERE ID IN  [*]5"; expected "("; SQL statement:
+UPDATE ITEMS 
+SET CATEGORY='ELETRONICS'
+WHERE ID IN  5 [42001-232]

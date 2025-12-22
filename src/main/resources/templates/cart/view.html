@@ -2,69 +2,321 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>MY CART - HobbySwap</title>
+  <title th:text="#{cart.title} + ' - HobbySwap'">購物車 - HobbySwap</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    .cart-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .cart-table th, .cart-table td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
-    .cart-table th { background: black; color: white; }
-    .cart-total { text-align: right; margin-top: 20px; font-size: 1.5rem; font-weight: bold; }
-    .item-thumb { width: 60px; height: 60px; object-fit: cover; border: 1px solid #ccc; }
+    .cart-container {
+        width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 4px solid black;
+        padding-bottom: 20px;
+        margin-bottom: 40px;
+    }
+
+    h1 {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 2.5rem;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 2px solid black;
+        margin-bottom: 30px;
+    }
+
+    .cart-table th {
+        background: black;
+        color: white;
+        font-family: 'Space Mono', monospace;
+        padding: 15px;
+        text-align: left;
+        text-transform: uppercase;
+        border-bottom: 2px solid black;
+    }
+
+    .cart-table td {
+        padding: 20px 15px;
+        border-bottom: 1px solid #000;
+        font-family: 'Space Mono', monospace;
+        vertical-align: middle;
+        background: white;
+    }
+
+    .cart-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .item-thumb {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border: 2px solid black;
+        box-shadow: 2px 2px 0px #ccc;
+    }
+
+    .item-link {
+        color: black;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.1rem;
+        display: block;
+    }
+    .item-link:hover {
+        text-decoration: underline;
+        color: var(--highlight);
+        background: black;
+        display: inline-block;
+    }
+
+    .btn-remove {
+        background: white;
+        border: 2px solid #c0392b;
+        color: #c0392b;
+        padding: 5px 10px;
+        font-family: 'Space Mono';
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 2px 2px 0px #c0392b;
+        transition: all 0.1s;
+    }
+
+    .btn-remove:hover {
+        background: #c0392b;
+        color: white;
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0px #000;
+    }
+
+    .cart-summary {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 20px;
+        background: var(--highlight);
+        border: 2px solid black;
+        box-shadow: 6px 6px 0px black;
+        padding: 30px;
+    }
+
+    .total-row {
+        font-family: 'Archivo Black', sans-serif;
+        font-size: 2rem;
+        text-transform: uppercase;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px;
+        border: 2px dashed black;
+        background: #f9f9f9;
+    }
+
+    .lang-dropdown { width: auto; position: relative; }
+    .lang-btn { display: flex; align-items: center; padding-left: 15px !important; text-align: left !important; font-family: 'Space Mono', monospace; background: white; cursor: pointer; }
+    .lang-content { position: absolute; top: 100%; left: 0; min-width: 100%; background-color: white; border: 2px solid black; border-top: none; z-index: 1000; display: none; }
+    .lang-dropdown:hover .lang-content { display: block; }
+    .lang-content a { display: block; padding: 10px 15px; text-decoration: none; color: black; border-bottom: 1px solid #eee; font-family: 'Space Mono', monospace; cursor: pointer; }
+    .lang-content a:hover { background-color: #000; color: #fff; }
+
   </style>
 </head>
 <body>
+
 <div class="navbar">
-  <a href="/" class="logo">HobbySwap</a>
+  <a th:href="@{/}" class="logo">HobbySwap</a>
+
+  <form action="/" method="get" class="search-form">
+    <input type="text" name="keyword"
+           th:placeholder="#{search.placeholder}"
+           th:value="${keyword}">
+
+    <button type="submit" th:text="#{search.btn}">GO</button>
+  </form>
+
   <div class="nav-links">
-    <a href="/" class="btn">← 繼續購物</a>
+    <div class="nav-right-group" style="display: flex; align-items: center; gap: 20px;">
+
+      <a th:href="@{/forum}" class="btn"
+         style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #000; box-shadow: 3px 3px 0px #000;"
+         th:text="#{nav.forum}">
+        💬 FORUM
+      </a>
+
+      <span th:if="${#authentication.principal != 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <div class="lang-dropdown">
+            <button class="lang-btn" style="background: var(--highlight); color: black; border: 2px solid black; min-width: 120px; font-family: 'Space Mono', monospace;">
+              <span th:text="${#authentication.principal.name}" style="font-weight:bold;">User</span>
+              <span style="font-size: 0.8rem; margin-left: 5px;">▼</span>
+            </button>
+            <div class="lang-content">
+                <a th:href="@{/mypage}" th:text="#{nav.mypage}">MY PAGE</a>
+                <a th:href="@{/private-chat}" th:text="#{nav.private_chat}">💬 私訊</a>
+                <a th:href="@{/chat}" th:text="#{nav.chat}">💬 CHAT</a>
+                <a th:href="@{/items/new}" th:text="#{nav.sell}">SELL</a>
+
+                <div style="height: 2px; background: black; margin: 0;"></div>
+
+                <a href="javascript:void(0)"
+                   onclick="document.getElementById('logout-form').submit();"
+                   style="color: red; font-weight: bold;"
+                   th:text="#{nav.logout}">LOGOUT</a>
+            </div>
+        </div>
+
+                <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;">
+            </form>
+            </span>
+
+      <span th:if="${#authentication.principal == 'anonymousUser'}" style="display:flex; align-items:center; gap: 20px;">
+                <a th:href="@{/login}" class="btn" style="height:45px; padding:0 20px; font-size:0.9rem; display: inline-flex; align-items: center; justify-content: center;" th:text="#{nav.login}">LOGIN</a>
+            </span>
+
+      <div class="lang-dropdown">
+        <button class="lang-btn">
+          <span>🌐 LANGUAGE ▼</span>
+        </button>
+        <div class="lang-content">
+          <a th:href="@{?lang=zh_TW}">繁體中文 [TW]</a>
+          <a th:href="@{?lang=en}">ENGLISH [EN]</a>
+          <a th:href="@{?lang=ja}">日本語 [JP]</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="container">
-  <h1>🛒 SHOPPING CART</h1>
+<div class="cart-container">
 
-  <div th:if="${cart.items.empty}" style="text-align: center; padding: 50px; color: #888;">
-    <h3>您的購物車是空的</h3>
-    <a href="/" class="btn" style="margin-top: 20px;">去逛逛商品</a>
+  <div class="page-header">
+    <h1 th:text="#{cart.title}">🛒 SHOPPING CART</h1>
+    <a th:href="@{/}" class="btn" th:text="#{cart.continue}">
+      ← CONTINUE SHOPPING
+    </a>
+  </div>
+
+  <div th:if="${cart.items.empty}" class="empty-state">
+    <h3 style="font-family: 'Archivo Black'; font-size: 1.5rem; text-transform: uppercase;" th:text="#{cart.empty.header}">YOUR CART IS EMPTY</h3>
+    <p style="color: #666; font-family: 'Space Mono'; margin-bottom: 30px;" th:text="#{cart.empty.desc}">Looks like you haven't added anything yet.</p>
+    <a th:href="@{/}" class="btn" th:text="#{cart.empty.btn}">GO SHOPPING</a>
   </div>
 
   <div th:if="${!cart.items.empty}">
     <table class="cart-table">
       <thead>
       <tr>
-        <th>商品</th>
-        <th>單價</th>
-        <th>數量</th>
-        <th>小計</th>
-        <th>操作</th>
+        <th th:text="#{cart.table.item}">ITEM</th>
+        <th th:text="#{cart.table.price}">PRICE</th>
+        <th th:text="#{cart.table.qty}">QTY</th>
+        <th th:text="#{cart.table.subtotal}">SUBTOTAL</th>
+        <th th:text="#{cart.table.action}">ACTION</th>
       </tr>
       </thead>
       <tbody>
       <tr th:each="ci : ${cart.items}">
-        <td style="display: flex; align-items: center; gap: 10px;">
-          <img th:if="${ci.item.imageName != null}" th:src="@{'/uploads/' + ${ci.item.imageName}}" class="item-thumb">
-          <a th:href="@{'/items/' + ${ci.item.id}}" th:text="${ci.item.title}" style="color: black; font-weight: bold; text-decoration: none;">商品名</a>
+      </tr>
+      <tr th:each="ci : ${cart.items}">
+        <td>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <img th:if="${ci.item.imageName != null}" th:src="@{'/uploads/' + ${ci.item.imageName}}" class="item-thumb">
+            <span th:if="${ci.item.imageName == null}" class="item-thumb" style="background:#eee; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">NO IMG</span>
+
+            <a th:href="@{'/items/' + ${ci.item.id}}" th:text="${ci.item.title}" class="item-link">商品名</a>
+          </div>
         </td>
-        <td th:text="'$' + ${ci.item.price}">$100</td>
+        <td style="font-weight: bold;" th:text="'$ ' + ${ci.item.price}">$100</td>
         <td th:text="${ci.quantity}">1</td>
-        <td th:text="'$' + ${ci.subTotal}">$100</td>
+        <td style="font-weight: bold; color: black;" th:text="'$ ' + ${ci.subTotal}">$100</td>
         <td>
           <form th:action="@{'/cart/remove/' + ${ci.id}}" method="post">
-            <button type="submit" class="btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">移除</button>
+            <button type="submit" class="btn-remove" th:text="#{cart.btn.remove}">REMOVE</button>
           </form>
         </td>
       </tr>
       </tbody>
     </table>
 
-    <div class="cart-total">
-      TOTAL: <span style="color: var(--highlight);" th:text="'$' + ${cart.totalPrice}">$500</span>
-    </div>
+    <div class="cart-summary">
+      <div class="total-row">
+        <span th:text="#{cart.total}">TOTAL:</span>
+        <span style="border-bottom: 4px solid black;" th:text="'$ ' + ${cart.totalPrice}">$500</span>
+      </div>
 
-    <div style="text-align: right; margin-top: 20px;">
-      <button class="btn" style="width: 200px; font-size: 1.2rem;">前往結帳 →</button>
+      <a th:href="@{/checkout}" class="btn"
+         style="width: 250px; height: 60px; font-size: 1.3rem; background: black; color: white; box-shadow: 6px 6px 0px white; display: flex; align-items: center; justify-content: center; text-decoration: none;"
+         th:text="#{cart.btn.checkout}">
+        CHECKOUT →
+      </a>
     </div>
   </div>
 </div>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4 th:text="#{footer.company}">COMPANY</h4>
+      <ul class="footer-links">
+        <li><a href="#" th:text="#{footer.brand}">關於我們 BRAND STORY</a></li>
+        <li><a href="#" th:text="#{footer.store}">門市資訊 STORE</a></li>
+        <li><a href="#" th:text="#{footer.privacy}">隱私權政策 PRIVACY</a></li>
+        <li><a href="#" th:text="#{footer.terms}">服務條款 TERMS</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 th:text="#{footer.service}">SERVICE</h4>
+      <ul class="footer-links">
+        <li><a href="#" th:text="#{footer.faq}">常見問題 FAQ</a></li>
+        <li><a href="#" th:text="#{footer.delivery}">運送政策 DELIVERY</a></li>
+        <li><a href="#" th:text="#{footer.return}">退換貨服務 RETURN</a></li>
+        <li><a href="#" th:text="#{footer.vip}">會員制度 VIP</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 th:text="#{footer.contact}">CONTACT US</h4>
+      <div class="contact-info">
+        <p><strong>TEL:</strong> 02-1234-5678</p>
+        <p><strong>EMAIL:</strong> help@hobbyswap.com</p>
+        <p><strong>TIME:</strong> MON - SUN / 11:00 - 20:00</p>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4 th:text="#{footer.follow}">FOLLOW US</h4>
+      <div class="social-links">
+        <a href="#">[ IG ]</a>
+        <a href="#">[ FB ]</a>
+        <a href="#">[ YT ]</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="copyright">
+
+    <div>
+      &copy; <span th:text="#{footer.copyright}">2025 HOBBYSWAP SUPPLY. ALL RIGHTS RESERVED.</span>
+    </div>
+
+    <div class="payment-icons">
+      <span>VISA</span>
+      <span>MASTER</span>
+      <span>JCB</span>
+      <span>APPLE PAY</span>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

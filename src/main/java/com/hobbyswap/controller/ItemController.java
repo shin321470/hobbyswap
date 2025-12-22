@@ -4,6 +4,7 @@ import com.hobbyswap.model.Item;
 import com.hobbyswap.model.Report;
 import com.hobbyswap.model.User;
 import com.hobbyswap.repository.ReportRepository;
+import com.hobbyswap.service.CartService;
 import com.hobbyswap.service.ItemService;
 import com.hobbyswap.service.UserService;
 import com.hobbyswap.model.Review;
@@ -31,11 +32,11 @@ public class ItemController {
 
     @Autowired private ItemService itemService;
     @Autowired private UserService userService;
+    @Autowired private CartService cartService;
     @Autowired private com.hobbyswap.repository.UserRepository userRepository;
     @Autowired private ReviewRepository reviewRepository;
     @Autowired private ReportRepository reportRepository;
 
-    // 首頁 (包含搜尋邏輯)
     @GetMapping("/")
     public String index(@RequestParam(required = false) String keyword, Model model) {
         List<Item> items;
@@ -47,35 +48,30 @@ public class ItemController {
         }
 
         model.addAttribute("items", items);
-        model.addAttribute("keyword", keyword); // 把關鍵字傳回去，讓搜尋框保留文字
+        model.addAttribute("keyword", keyword);
         return "index";
     }
 
-    // 商品詳情
     @GetMapping("/items/{id}")
     public String itemDetail(@PathVariable Long id, Model model) {
         Item item = itemService.findById(id);
         model.addAttribute("item", item);
 
-        // 撈出該商品的所有評論
         List<Review> reviews = reviewRepository.findByItemId(id);
         model.addAttribute("reviews", reviews);
 
         return "item-detail";
     }
 
-    // ▼ 新增：處理提交評論
     @PostMapping("/items/{id}/review")
     public String addReview(@PathVariable Long id,
                             @RequestParam("content") String content,
                             @RequestParam("rating") int rating,
                             Principal principal) {
 
-        // 1. 找出商品與使用者
         Item item = itemService.findById(id);
         User user = userService.findByEmail(principal.getName());
 
-        // 2. 建立新評論
         Review review = new Review();
         review.setContent(content);
         review.setRating(rating);
@@ -83,27 +79,22 @@ public class ItemController {
         review.setItem(item);
         review.setCreatedAt(LocalDateTime.now());
 
-        // 3. 存檔
         reviewRepository.save(review);
 
-        // 4. 重新導向回該商品頁面
         return "redirect:/items/" + id;
     }
 
-    // 刊登頁面
     @GetMapping("/items/new")
     public String createItemPage(Model model) {
         model.addAttribute("item", new Item());
         return "item-form";
     }
 
-    // 處理刊登 (上傳圖片)
     @PostMapping("/items")
     public String createItem(@ModelAttribute Item item,
                              @RequestParam("imageFile") MultipartFile file,
                              Principal principal) throws IOException {
 
-        // 1. 處理圖片上傳
         if (!file.isEmpty()) {
             String folder = "uploads/";
             Path path = Paths.get(folder);
@@ -122,17 +113,18 @@ public class ItemController {
         return "redirect:/";
     }
 
-    // 購買
     @PostMapping("/items/{id}/buy")
-    public String buyItem(@PathVariable Long id,
-                          @RequestParam(defaultValue = "1") int quantity) {
+    public String buyNow(@PathVariable Long id,
+                         @RequestParam int quantity,
+                         Principal principal) {
 
-        itemService.buyItem(id, quantity);
+        User user = userService.findByEmail(principal.getName());
 
-        return "redirect:/";
+        cartService.addToCart(user, id, quantity);
+
+        return "redirect:/checkout";
     }
 
-    // 刪除
     @PostMapping("/items/delete/{id}")
     public String deleteItem(@PathVariable Long id, Principal principal) {
         Item item = itemService.findById(id);
@@ -152,8 +144,6 @@ public class ItemController {
         return "redirect:/mypage";
     }
 
-    // ItemController.java
-
     @PostMapping("/items/{id}/favorite")
     @ResponseBody
     public org.springframework.http.ResponseEntity<String> toggleFavorite(@PathVariable Long id, Principal principal) {
@@ -165,25 +155,21 @@ public class ItemController {
         return org.springframework.http.ResponseEntity.ok("Success");
     }
 
-    // 刪除商品評論功能
     @PostMapping("/items/reviews/{id}/delete")
     public String deleteReview(@PathVariable Long id, Principal principal) {
         // 1. 找出評論
         Review review = reviewRepository.findById(id).orElse(null);
 
         if (review != null) {
-            // 2. 權限檢查：只有「評論者本人」可以刪除
-            // 注意：這裡假設 Review 裡的 User 欄位名稱是 "user" (或 author，請依您的 Review.java 為準)
             if (review.getUser().getEmail().equals(principal.getName())) {
-                Long itemId = review.getItem().getId(); // 記住商品 ID，刪除後要跳轉回去
+                Long itemId = review.getItem().getId();
                 reviewRepository.delete(review);
-                return "redirect:/items/" + itemId; // 刪除後回到該商品頁面
+                return "redirect:/items/" + itemId;
             }
         }
-        return "redirect:/"; // 如果出錯，回首頁
+        return "redirect:/";
     }
 
-    // 提交檢舉
     @PostMapping("/items/{id}/report")
     public String reportItem(@PathVariable Long id,
                              @RequestParam String reason,
@@ -198,7 +184,11 @@ public class ItemController {
             report.setReason(reason);
             reportRepository.save(report);
         }
-        // 檢舉完回到該商品頁，可以加個參數讓前端顯示「檢舉成功」
         return "redirect:/items/" + id + "?reported=true";
+    }
+
+    @GetMapping("/login-check")
+    public String loginCheck(@RequestParam String target) {
+        return "redirect:" + target;
     }
 }
