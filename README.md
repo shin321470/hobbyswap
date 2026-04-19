@@ -87,7 +87,7 @@ src/main/resources/
    打開您的終端機 (Terminal / PowerShell / 命令提示字元)，複製並貼上以下指令：
 
    ```bash
-   git clone <您的_repository_url>
+   git clone https://github.com/shin321470/hobbyswap.git
    cd hobbyswap
    ```
 2. **安裝所有套件依賴**：
