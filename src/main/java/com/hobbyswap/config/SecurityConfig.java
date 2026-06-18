@@ -74,6 +74,11 @@ public class SecurityConfig {
                 );
 
         // H2 Console 的特殊設定 (放在一般通道即可)
+        // ⚠️ 安全性提醒：以下兩行是為了「開發階段」能用瀏覽器開 H2 Console 而放寬限制：
+        //   1. 對 /h2-console/** 關閉 CSRF 保護
+        //   2. 關閉 frameOptions (H2 Console 以 iframe 呈現，否則會被瀏覽器擋下)
+        // 這會降低安全性，正式上線時應移除這兩行，並把 application.properties 的
+        // spring.h2.console.enabled 設為 false (或改用 PostgreSQL/MySQL 等正式資料庫)。
         http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 

@@ -49,7 +49,7 @@ public class UserService implements UserDetailsService {
 
         // ▼ 設定角色權限 (Authority)
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRole()));
+        authorities.add(new SimpleGrantedAuthority(user.getRole().name()));
 
 
         // 回傳 Spring Security 需要的使用者物件

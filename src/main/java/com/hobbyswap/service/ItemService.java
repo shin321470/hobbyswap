@@ -1,6 +1,7 @@
 package com.hobbyswap.service;
 
 import com.hobbyswap.model.Item;
+import com.hobbyswap.model.ItemStatus;
 import com.hobbyswap.model.User;
 import com.hobbyswap.repository.ItemRepository;
 import com.hobbyswap.repository.UserRepository;
@@ -18,7 +19,7 @@ public class ItemService {
 
     // 找出所有上架中 (ON_SALE) 的商品
     public List<Item> findAllOnSale() {
-        return itemRepository.findByStatusOrderByUploadDateDesc("ON_SALE");
+        return itemRepository.findByStatusOrderByUploadDateDesc(ItemStatus.ON_SALE);
     }
 
     // 根據 ID 查找商品，若找不到則拋出例外
@@ -30,7 +31,7 @@ public class ItemService {
     public void createItem(Item item, User seller) {
         item.setSeller(seller);
         item.setUploadDate(LocalDateTime.now());
-        item.setStatus("ON_SALE");
+        item.setStatus(ItemStatus.ON_SALE);
         itemRepository.save(item);
     }
 
@@ -44,7 +45,7 @@ public class ItemService {
             item.setStockQuantity(item.getStockQuantity() - quantity);
 
             if (item.getStockQuantity() == 0) {
-                item.setStatus("SOLD");
+                item.setStatus(ItemStatus.SOLD);
             }
 
             itemRepository.save(item);
@@ -60,14 +61,14 @@ public class ItemService {
 
     public void deleteItem(Long id) {
         Item item = findById(id);
-        item.setStatus("DELETED");
+        item.setStatus(ItemStatus.DELETED);
         itemRepository.save(item);
     }
 
     public List<Item> searchItems(String keyword) {
         if (keyword != null && !keyword.isEmpty()) {
             return itemRepository.findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
-                    "ON_SALE", keyword, "ON_SALE", keyword
+                    ItemStatus.ON_SALE, keyword, ItemStatus.ON_SALE, keyword
             );
         }
         return findAllOnSale();

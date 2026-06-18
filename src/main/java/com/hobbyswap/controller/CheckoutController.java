@@ -97,7 +97,7 @@ public class CheckoutController {
         }
         item.setStockQuantity(item.getStockQuantity() - quantity);
         if (item.getStockQuantity() == 0) {
-            item.setStatus("SOLD");
+            item.setStatus(ItemStatus.SOLD);
         }
         itemRepository.save(item);
 

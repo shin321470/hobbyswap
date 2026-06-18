@@ -1,11 +1,14 @@
 package com.hobbyswap.controller;
 
 import com.hobbyswap.model.Item;
+import com.hobbyswap.model.ItemStatus;
 import com.hobbyswap.model.Report;
 import com.hobbyswap.model.User;
 import com.hobbyswap.repository.ReportRepository;
 import com.hobbyswap.service.ItemService;
 import com.hobbyswap.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +19,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin") // 所有網址都以 /admin 開頭
 public class AdminController {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     @Autowired private UserService userService;
     @Autowired private ItemService itemService;
@@ -36,22 +41,14 @@ public class AdminController {
     // 2. 封鎖/解鎖使用者
     @PostMapping("/users/{id}/toggle-ban")
     public String toggleBanUser(@PathVariable Long id) {
-        System.out.println("🔥 [DEBUG] 收到封鎖/解鎖請求，目標 ID: " + id);
-
         User user = userService.findById(id);
 
         if (user != null) {
-            System.out.println("🔄 [DEBUG] 修改前狀態 (Enabled): " + user.isEnabled());
-
-            // 执行切换
-            user.setEnabled(!user.isEnabled());
-
-            // 保存
+            user.setEnabled(!user.isEnabled());   // 切換封鎖/解鎖
             userService.save(user);
-
-            System.out.println("✅ [DEBUG] 修改後狀態 (Enabled): " + user.isEnabled() + " (已執行 save)");
+            log.debug("已切換使用者 {} 的啟用狀態為 {}", id, user.isEnabled());
         } else {
-            System.out.println("❌ [DEBUG] 找不到使用者，ID: " + id);
+            log.warn("找不到要封鎖/解鎖的使用者，ID: {}", id);
         }
 
         return "redirect:/admin/dashboard";
@@ -62,9 +59,8 @@ public class AdminController {
     public String deleteItem(@PathVariable Long id) {
         Item item = itemService.findById(id);
         if (item != null) {
-            // 我們不真的刪除，而是把狀態改成 BANNED 或 SOLD，這裡示範改成 "BANNED"
-            // 請確認您的 Item 狀態欄位是 String 還是 Enum
-            item.setStatus("BANNED");
+            // 不真的刪除，而是把狀態改成 BANNED (強制下架)
+            item.setStatus(ItemStatus.BANNED);
             itemService.save(item);
         }
         return "redirect:/admin/dashboard";
@@ -86,7 +82,7 @@ public class AdminController {
                 // 如果決定封鎖：
                 // 1. 把商品狀態改成 BANNED
                 Item item = report.getItem();
-                item.setStatus("BANNED");
+                item.setStatus(ItemStatus.BANNED);
                 itemService.save(item);
 
                 // 2. 檢舉結案 (已處理)

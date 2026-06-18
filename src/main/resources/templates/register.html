@@ -78,12 +78,18 @@
     <form th:action="@{/register}" method="post" th:object="${user}">
         <label th:text="#{register.name}">姓名:</label>
         <input type="text" th:field="*{name}" required th:placeholder="#{register.name_ph}">
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
+             style="color:red; font-size:0.85rem; margin:-8px 0 12px;"></div>
 
         <label th:text="#{register.email}">Email:</label>
         <input type="email" th:field="*{email}" required th:placeholder="#{register.email_ph}">
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+             style="color:red; font-size:0.85rem; margin:-8px 0 12px;"></div>
 
         <label th:text="#{register.password}">密碼:</label>
         <input type="password" th:field="*{password}" required th:placeholder="#{register.password_ph}">
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
+             style="color:red; font-size:0.85rem; margin:-8px 0 12px;"></div>
 
         <button type="submit" class="btn" th:text="#{register.btn}">註冊</button>
     </form>

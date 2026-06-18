@@ -10,9 +10,11 @@ import com.hobbyswap.service.UserService;
 import com.hobbyswap.model.Review;
 import com.hobbyswap.repository.ReviewRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +31,8 @@ import java.util.List;
 
 @Controller
 public class ItemController {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ItemController.class);
 
     @Autowired private ItemService itemService;
     @Autowired private UserService userService;
@@ -91,9 +95,15 @@ public class ItemController {
     }
 
     @PostMapping("/items")
-    public String createItem(@ModelAttribute Item item,
+    public String createItem(@Valid @ModelAttribute Item item,
+                             BindingResult result,
                              @RequestParam("imageFile") MultipartFile file,
                              Principal principal) throws IOException {
+
+        // 驗證未通過 (例如標題空白、價格 <= 0) -> 回到刊登頁顯示錯誤
+        if (result.hasErrors()) {
+            return "item-form";
+        }
 
         if (!file.isEmpty()) {
             String folder = "uploads/";
@@ -129,16 +139,11 @@ public class ItemController {
     public String deleteItem(@PathVariable Long id, Principal principal) {
         Item item = itemService.findById(id);
 
-        System.out.println("=== 嘗試刪除商品 ===");
-        System.out.println("商品 ID: " + id);
-        System.out.println("登入者 (Principal): " + principal.getName());
-        System.out.println("賣家 (Seller Email): " + item.getSeller().getEmail());
-
         if (item != null && item.getSeller().getEmail().equals(principal.getName())) {
             itemService.deleteItem(id);
-            System.out.println(">>> 刪除成功！");
+            log.debug("使用者 {} 刪除了商品 {}", principal.getName(), id);
         } else {
-            System.out.println(">>> 刪除失敗：權限不符或商品不存在");
+            log.warn("刪除商品 {} 失敗：權限不符或商品不存在", id);
         }
 
         return "redirect:/mypage";

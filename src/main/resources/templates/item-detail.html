@@ -226,7 +226,7 @@
 
             <div class="product-price-box">
                 <span class="price-large" th:text="'$ ' + ${item.price}">$ 1000</span>
-                <span th:if="${item.status == 'SOLD'}" class="sold-stamp" style="position:static; transform:none; font-size:1.5rem; padding:5px 10px; border-width:2px;" th:text="#{item.sold}">SOLD</span>
+                <span th:if="${item.status?.name() == 'SOLD'}" class="sold-stamp" style="position:static; transform:none; font-size:1.5rem; padding:5px 10px; border-width:2px;" th:text="#{item.sold}">SOLD</span>
             </div>
 
             <div style="margin-top: 10px; font-weight: bold; color: #666; font-family: 'Space Mono', monospace;">
@@ -292,7 +292,7 @@
                 </div>
             </div>
 
-            <div class="action-box" th:if="${item.status == 'ON_SALE'}">
+            <div class="action-box" th:if="${item.status?.name() == 'ON_SALE'}">
                 <div class="info-row">
                     <span class="info-label" th:text="#{item.payment}">付款方式</span>
                     <span class="info-value" th:text="#{item.payment_desc}">Credit / ATM</span>
@@ -366,7 +366,7 @@
                 </div>
             </div>
 
-            <div class="action-box" th:if="${item.status == 'SOLD' or item.stockQuantity == 0}"
+            <div class="action-box" th:if="${item.status?.name() == 'SOLD' or item.stockQuantity == 0}"
                  style="background: #f0f0f0; border-color: #ccc;">
                 <h2 style="color: #999; text-align: center; margin: 0;" th:text="#{item.sold}">SOLD OUT</h2>
             </div>

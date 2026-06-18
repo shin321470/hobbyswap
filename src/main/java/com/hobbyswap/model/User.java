@@ -1,6 +1,9 @@
 package com.hobbyswap.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,24 +21,30 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Email 不可空白")
+    @Email(message = "Email 格式不正確")
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank(message = "密碼不可空白")
+    @Size(min = 4, message = "密碼至少需 4 個字元")
     @Column(nullable = false)
     private String password;
 
+    @NotBlank(message = "姓名不可空白")
     @Column(nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Item> items;
 
-    private String role;      // 存 "ROLE_USER" 或 "ROLE_ADMIN"
+    @Enumerated(EnumType.STRING)
+    private Role role;        // ROLE_USER 或 ROLE_ADMIN
     private boolean enabled;  // true=正常, false=被封鎖
 
     public User() {
-        this.role = "ROLE_USER"; // 預設是一般人
-        this.enabled = true;     // 預設帳號是啟用的
+        this.role = Role.ROLE_USER; // 預設是一般人
+        this.enabled = true;        // 預設帳號是啟用的
     }
 
 
@@ -57,8 +66,8 @@ public class User implements UserDetails {
     }
 
     // --- Getter / Setter ---
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Long getId() { return id; }
@@ -85,7 +94,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(this.role));
+        return Collections.singleton(new SimpleGrantedAuthority(this.role.name()));
     }
 
     @Override

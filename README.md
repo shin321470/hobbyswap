@@ -52,6 +52,22 @@ HobbySwap 是一個基於 Spring Boot 開發的線上社群與交易平台，專
 * **即時通訊**：Spring Boot WebSocket
 * **構建工具**：Maven
 
+## 資料儲存 (資料記錄於檔案中)
+
+本專案的資料以 **兩種方式記錄於檔案** 中，皆可在程式關閉後保留：
+
+1. **H2 資料庫（檔案模式）**：主要業務資料（會員、商品、訂單、論壇、聊天等）透過 Spring Data JPA
+   寫入 H2 資料庫，而 H2 設定為「檔案模式」(`jdbc:h2:file:./data/hobbyswap`)，
+   實際資料就儲存在專案根目錄的 **`data/hobbyswap.mv.db`** 這個檔案裡。
+
+2. **純文字 CSV 檔（Java 原生檔案 I/O）**：另提供「檔案資料管理」功能，
+   完全不使用資料庫，直接以 `BufferedReader` / `BufferedWriter` 對純文字檔
+   **`data/records.csv`** 進行 **寫入(新增) / 讀取(列表) / 修改 / 刪除**：
+   * 物件：[`FileRecord`](src/main/java/com/hobbyswap/model/FileRecord.java)
+   * 檔案讀寫邏輯：[`FileRecordService`](src/main/java/com/hobbyswap/service/FileRecordService.java)
+   * 進入頁面：以管理員身分登入後 → 後台儀表板 → 「🗂️ 檔案資料管理」按鈕（網址 `/admin/records`）
+   * 管理員測試帳號：`admin@hobbyswap.com` / `admin123`
+
 ## 專案結構簡介
 
 ```text
@@ -105,25 +121,20 @@ src/main/resources/
 ### 3. 環境配置 (IDE 與設定檔)
 
 1. **應用程式設定**：
-   專案的核心設定檔位於 `src/main/resources/application.properties`。在開始執行前，您可依需求修改伺服器埠口與資料庫設定（預設使用 H2 記憶體資料庫，不需額外安裝）：
+   專案的核心設定檔位於 `src/main/resources/application.properties`。本專案的 H2 採用 **檔案模式 (file mode)**，所有資料會「持久化」寫入專案根目錄下的 `data/` 資料夾（例如 `data/hobbyswap.mv.db`），程式關閉後資料不會消失。您可依需求修改：
 
    ```properties
-   # 伺服器設定
-   server.port=8080
-
-   # H2 資料庫設定
-   spring.datasource.url=jdbc:h2:mem:hobbyswapdb
+   # H2 資料庫設定 (檔案模式：資料實際存於 ./data/hobbyswap.mv.db 檔案中)
+   spring.datasource.url=jdbc:h2:file:./data/hobbyswap
    spring.datasource.driverClassName=org.h2.Driver
    spring.datasource.username=sa
-   spring.datasource.password=
+   spring.datasource.password=password
 
    # JPA/Hibernate 設定
    spring.jpa.hibernate.ddl-auto=update
-   spring.jpa.show-sql=true
 
    # 開啟 H2 控制台
    spring.h2.console.enabled=true
-   spring.h2.console.path=/h2-console
    ```
 2. **開發工具 (IDE) 匯入**：
 

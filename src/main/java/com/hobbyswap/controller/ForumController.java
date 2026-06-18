@@ -58,7 +58,7 @@ public class ForumController {
         model.addAttribute("categories", ForumCategory.values());
 
         User user = userService.findByEmail(principal.getName());
-        List<Item> myItems = itemRepository.findBySellerAndStatus(user, "ON_SALE");
+        List<Item> myItems = itemRepository.findBySellerAndStatus(user, ItemStatus.ON_SALE);
 
         model.addAttribute("myItems", myItems);
         return "forum/form";

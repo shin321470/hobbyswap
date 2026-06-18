@@ -28,6 +28,13 @@
 <div class="admin-container">
     <h1>📊 管理後台</h1>
 
+    <div style="margin-bottom: 30px;">
+        <a th:href="@{/admin/records}" class="btn"
+           style="display: inline-block; padding: 12px 20px; border: 2px solid #000; box-shadow: 4px 4px 0 #000; font-weight: bold; text-decoration: none; color: #000; background: var(--highlight, #ffe600);">
+            🗂️ 檔案資料管理 (data/records.csv)
+        </a>
+    </div>
+
     <h2>👤 使用者管理</h2>
     <table>
         <thead>
@@ -49,11 +56,11 @@
                 <span th:unless="${user.enabled}" style="color:red;">已封鎖</span>
             </td>
             <td>
-                <span th:if="${user.role == 'ROLE_ADMIN'}" style="color: #999;">
+                <span th:if="${user.role?.name() == 'ROLE_ADMIN'}" style="color: #999;">
                     (管理員)
                 </span>
 
-                <div th:if="${user.role != 'ROLE_ADMIN'}">
+                <div th:if="${user.role?.name() != 'ROLE_ADMIN'}">
 
                     <form th:if="${user.enabled}"
                           th:action="@{'/admin/users/' + ${user.id} + '/toggle-ban'}" method="post">
@@ -98,15 +105,15 @@
             </td>
             <td th:text="${item.title}">Guitar</td>
             <td th:text="${item.seller.name}">Seller</td>
-            <td th:text="${item.status}">ON_SALE</td>
+            <td th:text="${item.status?.name()}">ON_SALE</td>
             <td>
-                <form th:if="${item.status != 'BANNED'}"
+                <form th:if="${item.status?.name() != 'BANNED'}"
                       th:action="@{'/admin/items/' + ${item.id} + '/delete'}" method="post">
                     <button type="submit" class="btn-danger" onclick="return confirm('確定要強制下架嗎？');">
                         強制下架
                     </button>
                 </form>
-                <span th:if="${item.status == 'BANNED'}" style="color:red; font-weight:bold;">已下架</span>
+                <span th:if="${item.status?.name() == 'BANNED'}" style="color:red; font-weight:bold;">已下架</span>
             </td>
         </tr>
         </tbody>
