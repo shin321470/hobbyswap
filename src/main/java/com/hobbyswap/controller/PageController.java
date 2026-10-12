@@ -1,6 +1,7 @@
 package com.hobbyswap.controller;
 
 import com.hobbyswap.model.User;
+import com.hobbyswap.model.ItemStatus;
 import com.hobbyswap.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,6 +28,9 @@ public class PageController {
 
         int count = (user.getItems() != null) ? user.getItems().size() : 0;
         model.addAttribute("itemCount", count);
+        long soldCount = user.getItems() == null ? 0 : user.getItems().stream()
+                .filter(item -> item.getStatus() == ItemStatus.SOLD).count();
+        model.addAttribute("soldCount", soldCount);
 
         return "mypage";
     }

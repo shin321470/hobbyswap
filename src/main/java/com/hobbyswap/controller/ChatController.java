@@ -26,8 +26,8 @@ public class ChatController {
     // 1. 進入頁面：撈出歷史訊息
     @GetMapping("/chat")
     public String chatPage(Model model) {
-        // 把資料庫裡的所有訊息抓出來，放進 "history" 變數傳給網頁
-        model.addAttribute("history", chatMessageRepository.findAllByOrderByTimestampAsc());
+        // 公開聊天室只載入公開訊息，私訊由私人對話頁查詢。
+        model.addAttribute("history", chatMessageRepository.findByRecipientIsNullOrderByTimestampAsc());
         return "chat";
     }
 

@@ -16,9 +16,9 @@
 <body>
 
 <div class="navbar">
-    <a href="/static" class="logo">HobbySwap ADMIN</a>
+    <a th:href="@{/}" class="logo">HobbySwap ADMIN</a>
     <div class="nav-links">
-        <a href="/static" class="btn">回到首頁</a>
+        <a th:href="@{/}" class="btn">回到首頁</a>
         <form th:action="@{/admin/logout}" method="post" style="display:inline;">
             <button class="btn-logout">登出</button>
         </form>

@@ -11,6 +11,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     // 撈出所有訊息，並依照時間舊->新排序
     List<ChatMessage> findAllByOrderByTimestampAsc();
 
+    List<ChatMessage> findByRecipientIsNullOrderByTimestampAsc();
+
     @Query("SELECT m FROM ChatMessage m WHERE " +
             "(m.sender = :user1 AND m.recipient = :user2) OR " +
             "(m.sender = :user2 AND m.recipient = :user1) " +

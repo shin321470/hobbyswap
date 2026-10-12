@@ -58,9 +58,13 @@ public class ItemController {
     }
 
     @GetMapping("/items/{id}")
-    public String itemDetail(@PathVariable Long id, Model model) {
+    public String itemDetail(@PathVariable Long id, Model model, Principal principal) {
         Item item = itemService.findById(id);
         model.addAttribute("item", item);
+        User currentUser = principal == null ? null : userService.findByEmail(principal.getName());
+        boolean isFavorite = currentUser != null && currentUser.getFavoriteItems().stream()
+                .anyMatch(favorite -> favorite.getId().equals(id));
+        model.addAttribute("isFavorite", isFavorite);
 
         List<Review> reviews = reviewRepository.findByItemId(id);
         model.addAttribute("reviews", reviews);
