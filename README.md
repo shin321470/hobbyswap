@@ -4,16 +4,18 @@ HobbySwap 是一個基於 Spring Boot 開發的線上社群與交易平台，專
 
 ## 核心功能
 
-* **會員系統**：用戶註冊、登入、個人首頁 (MyPage) 以及個人資料管理。
+* **會員系統**：註冊、登入與登出、重複 Email 檢查，以及個人首頁 (MyPage) 的刊登商品與已售出數量。
 * **物品交易**：
-  * 商品上架與展示
-  * 購物車管理
-  * 結帳流程
-  * 訂單管理
-* **社群論壇**：提供討論區讓用戶發表文章、回覆討論，依據不同分類交流興趣。
-* **即時通訊**：支援 WebSocket 即時聊天功能，方便買賣雙方以及社群成員間的即時溝通 (包括私訊或群聊)。
-* **多語系支持**：內建國際化支持，包含繁體中文，英文及日文。
-* **後台管理**：管理員專屬的儀表板，支援平台營運相關的資料管理。
+  * 商品上架、瀏覽、關鍵字搜尋、收藏、評價與下架
+  * 購物車加入、同商品數量合併與移除
+  * 購物車結帳與直接購買，建立訂單並更新庫存
+  * 購買數量須大於零，結帳不得超過庫存；庫存歸零時標記為售出
+* **社群論壇**：文章發表、分類與搜尋、留言及回覆，以及作者刪除自己的內容。
+* **即時通訊**：透過 WebSocket / STOMP 提供公共聊天室、私人聊天與訊息儲存；公共聊天紀錄排除私人訊息。
+* **多語系支援**：預設繁體中文，可切換英文及日文。
+* **後台管理**：管理員可封鎖與解除封鎖會員、強制下架商品、處理檢舉，以及管理 CSV 檔案資料。
+
+訪客可瀏覽商品與論壇；商品刊登、購物、論壇發文等寫入操作需登入，後台限定管理員使用。
 
 ## 系統畫面
 
@@ -44,17 +46,17 @@ HobbySwap 是一個基於 Spring Boot 開發的線上社群與交易平台，專
 
 ## 技術選型
 
-* **後端架構**：Java 21, Spring Boot 3.5.x
+* **後端架構**：Java 21, Spring Boot 3.5.8
 * **安全機制**：Spring Security
 * **資料存取**：Spring Data JPA
 * **資料庫**：H2 Database
 * **前端模板**：Thymeleaf, Thymeleaf Extras for Spring Security
 * **即時通訊**：Spring Boot WebSocket
-* **構建工具**：Maven
+* **構建工具**：Maven / Maven Wrapper
 
-## 資料儲存 (資料記錄於檔案中)
+## 資料儲存
 
-本專案的資料以 **兩種方式記錄於檔案** 中，皆可在程式關閉後保留：
+一般啟動時，資料以以下方式儲存在本機，程式關閉後仍會保留。相對路徑以執行時的工作目錄為準；從專案根目錄啟動時，檔案位置如下：
 
 1. **H2 資料庫（檔案模式）**：主要業務資料（會員、商品、訂單、論壇、聊天等）透過 Spring Data JPA
    寫入 H2 資料庫，而 H2 設定為「檔案模式」(`jdbc:h2:file:./data/hobbyswap`)，
@@ -66,7 +68,9 @@ HobbySwap 是一個基於 Spring Boot 開發的線上社群與交易平台，專
    * 物件：[`FileRecord`](src/main/java/com/hobbyswap/model/FileRecord.java)
    * 檔案讀寫邏輯：[`FileRecordService`](src/main/java/com/hobbyswap/service/FileRecordService.java)
    * 進入頁面：以管理員身分登入後 → 後台儀表板 → 「🗂️ 檔案資料管理」按鈕（網址 `/admin/records`）
-   * 管理員測試帳號：`admin@hobbyswap.com` / `admin123`
+   * 管理員示範帳號：`admin@hobbyswap.com` / `admin123`
+
+3. **商品圖片**：上傳檔案儲存在 `uploads/`，由 `/uploads/**` 提供存取；單一檔案及單次請求上限皆為 10 MB。
 
 ## 專案結構簡介
 
@@ -82,6 +86,15 @@ src/main/resources/
 ├── static/       # 靜態資源 (CSS 等)
 ├── templates/    # Thymeleaf 前端頁面模板
 └── application.properties # 系統運行配置設定
+src/test/java/com/hobbyswap/
+├── controller/   # 聊天控制器單元測試
+├── service/      # 會員單元測試、交易整合測試與 CSV 檔案測試
+├── CommunityAdminTest.java       # 論壇發文、作者權限與後台操作測試
+├── WebAccessTest.java            # 網頁權限、表單驗證與語系切換測試
+├── PrivateChatDeliveryTest.java  # 雙使用者 WebSocket 私訊整合測試
+└── HobbySwapApplicationTests.java # Spring 應用程式啟動測試
+src/test/resources/
+└── application-test.properties   # test profile 設定，使用記憶體 H2
 ```
 
 ## 快速開始
@@ -95,9 +108,9 @@ src/main/resources/
   *(※ 安裝 JDK 時，請記得勾選「設為系統環境變數/Add to PATH」)*
 * **不需安裝 Maven**: 本專案已內建 `mvnw` (Maven Wrapper 工具)，系統會自動處理所有的套件！
 
-### 2.下載專案與「安裝相依套件」
+### 2. 下載專案與建置
 
-這一步將把程式碼下載到本地，並讓系統自動從網路下載專案需要用到的所有套件。
+這一步將下載程式碼與相依套件，並編譯及打包專案。
 
 1. **取得程式碼**：
    打開您的終端機 (Terminal / PowerShell / 命令提示字元)，複製並貼上以下指令：
@@ -106,16 +119,16 @@ src/main/resources/
    git clone https://github.com/shin321470/hobbyswap.git
    cd hobbyswap
    ```
-2. **安裝所有套件依賴**：
-   在這個專案裡，所有需要的套件都記錄在 `pom.xml` 裡。請在終端機輸入下列指令，讓系統**自動幫您下載並安裝所有的套件**。*(請注意：第一次執行時會下載大量的相關檔案，可能會需要花費幾分鐘的時間，請耐心等待直到終端機顯示 `BUILD SUCCESS` 為止。)*
+2. **建置專案**：
+   在專案根目錄執行以下指令。第一次執行會下載 Maven 與 `pom.xml` 中的相依套件，完成後應顯示 `BUILD SUCCESS`。
 
-   * **Windows**:
-     ```bash
-     .\mvnw clean install -DskipTests
+   * **Windows / PowerShell**:
+     ```powershell
+     .\mvnw.cmd clean verify
      ```
    * **Mac / Linux**:
      ```bash
-     ./mvnw clean install -DskipTests
+     ./mvnw clean verify
      ```
 
 ### 3. 環境配置 (IDE 與設定檔)
@@ -148,9 +161,9 @@ src/main/resources/
 
 1. 執行應用程式啟動指令：
 
-   * **Windows**:
-     ```bash
-     .\mvnw spring-boot:run
+   * **Windows / PowerShell**:
+     ```powershell
+     .\mvnw.cmd spring-boot:run
      ```
    * **Mac / Linux**:
      ```bash
@@ -169,6 +182,14 @@ HobbySwap 支援多語系切換，位於 `src/main/resources/` 的 `.properties`
 * `messages.properties` - 繁體中文語系
 * `messages_en.properties` - 英文語系
 * `messages_ja.properties` - 日文語系
+
+預設語系為繁體中文，可透過頁面語系選單，或在網址加入 `?lang=en`、`?lang=ja`、`?lang=zh_TW` 切換；選擇會保留在目前的 session。
+
+## 已知限制與待完成項目
+
+* MyPage 的商品「編輯」連結尚無對應處理流程，目前會回傳 404；「編輯個人檔案」按鈕也尚未接上功能。
+* 結帳已建立並儲存訂單，買家訂單歷史與訂單管理頁面尚待實作。
+* MyPage 評分目前固定顯示 5.0，頁尾部分資訊與社群連結仍為佔位內容。
 
 ## H2 資料庫主控台
 
