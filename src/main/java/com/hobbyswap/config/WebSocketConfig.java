@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // 設定訊息廣播的路徑前綴
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
         // 設定客戶端發送訊息的路徑前綴
         registry.setApplicationDestinationPrefixes("/app");
         // 啟用使用者專屬前綴 (預設就是 /user，這裡顯式宣告更清楚)

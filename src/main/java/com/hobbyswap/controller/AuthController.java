@@ -36,6 +36,10 @@ public class AuthController {
         if (result.hasErrors()) {
             return "register";
         }
+        if (userService.findByEmail(user.getEmail()) != null) {
+            result.rejectValue("email", "email.duplicate", "此 Email 已註冊");
+            return "register";
+        }
         userService.register(user);
         return "redirect:/login"; // 註冊成功後跳轉至登入頁
     }

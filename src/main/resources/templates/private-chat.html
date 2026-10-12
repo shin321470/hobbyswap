@@ -271,7 +271,7 @@
 
             <div class="chat-input">
                 <input type="text" id="msg-input" placeholder="TYPE MESSAGE..." autocomplete="off">
-                <button onclick="sendPrivate()" class="btn-send">SEND ▶</button>
+                <button id="send-button" onclick="sendPrivate()" class="btn-send" disabled>SEND ▶</button>
             </div>
         </div>
 
@@ -292,12 +292,14 @@
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
+            document.getElementById('send-button')?.removeAttribute('disabled');
 
             stompClient.subscribe('/user/queue/private', function (payload) {
                 var message = JSON.parse(payload.body);
                 showPrivateMessage(message);
             });
+        }, function () {
+            document.getElementById('send-button')?.setAttribute('disabled', 'disabled');
         });
     }
 
@@ -305,7 +307,7 @@
         var input = document.getElementById('msg-input');
         var content = input.value.trim();
 
-        if(content && stompClient && currentRecipient) {
+        if(content && stompClient && stompClient.connected && currentRecipient) {
             var chatMessage = {
                 content: content,
                 type: 'CHAT',
@@ -314,12 +316,6 @@
             stompClient.send("/app/chat.sendPrivate", {}, JSON.stringify(chatMessage));
             input.value = '';
 
-            var myMsg = {
-                sender: currentUser,
-                content: content,
-                recipient: currentRecipient
-            };
-            showPrivateMessage(myMsg);
         }
     }
 
@@ -332,7 +328,12 @@
             div.classList.add(message.sender === currentUser ? 'self' : 'other');
 
             var senderLabel = message.sender === currentUser ? 'YOU' : message.sender;
-            div.innerHTML = `<div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 2px;">${senderLabel}</div><span>${message.content}</span>`;
+            var sender = document.createElement('div');
+            sender.style.cssText = 'font-size: 0.7rem; opacity: 0.7; margin-bottom: 2px;';
+            sender.textContent = senderLabel;
+            var content = document.createElement('span');
+            content.textContent = message.content;
+            div.append(sender, content);
 
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;

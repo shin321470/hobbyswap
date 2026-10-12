@@ -1,6 +1,8 @@
 package com.hobbyswap;
 
 import com.hobbyswap.model.Cart;
+import com.hobbyswap.model.ChatMessage;
+import com.hobbyswap.repository.ChatMessageRepository;
 import com.hobbyswap.model.ForumCategory;
 import com.hobbyswap.model.ForumPost;
 import com.hobbyswap.model.Item;
@@ -33,6 +35,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class WebAccessTest {
     @Autowired MockMvc mvc;
+    @Autowired ChatMessageRepository messages;
     @Autowired CartService carts;
     @Autowired ForumRepository posts;
     @Autowired ItemRepository items;
@@ -49,6 +53,48 @@ class WebAccessTest {
     @Autowired UserRepository users;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired LocaleResolver localeResolver;
+
+    @Test
+    void publicChatHistoryExcludesPrivateMessages() throws Exception {
+        ChatMessage publicMessage = new ChatMessage();
+        publicMessage.setSender("alice@test.com");
+        publicMessage.setContent("public-history-marker");
+        messages.save(publicMessage);
+        ChatMessage privateMessage = new ChatMessage();
+        privateMessage.setSender("alice@test.com");
+        privateMessage.setRecipient("bob@test.com");
+        privateMessage.setContent("private-history-secret-marker");
+        messages.save(privateMessage);
+
+        var result = mvc.perform(get("/chat").with(user(users.findByEmail("alice@test.com").orElseThrow())))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("public-history-marker")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        containsString("private-history-secret-marker"))))
+                .andReturn();
+        var history = (java.util.List<ChatMessage>) result.getModelAndView().getModel().get("history");
+        assertTrue(history.stream().allMatch(message -> message.getRecipient() == null));
+    }
+
+    @Test
+    void myPageCountsSoldItems() throws Exception {
+        User alice = users.findByEmail("alice@test.com").orElseThrow();
+        Item item = alice.getItems().iterator().next();
+        item.setStatus(ItemStatus.SOLD);
+        items.save(item);
+
+        mvc.perform(get("/mypage").with(user(alice)))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("soldCount", 1L));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminHomeLinkPointsToHome() throws Exception {
+        mvc.perform(get("/admin/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("href=\"/static\""))));
+    }
 
     @Test
     void visitorCanBrowseHomeAndForum() throws Exception {
@@ -61,6 +107,28 @@ class WebAccessTest {
         Item item = items.findAll().getFirst();
 
         mvc.perform(get("/items/{id}", item.getId())).andExpect(status().isOk());
+    }
+
+    @Test
+    void itemDetailReflectsPersistedFavoriteStateAfterReload() throws Exception {
+        User alice = users.findByEmail("alice@test.com").orElseThrow();
+        Item item = items.findAll().stream()
+                .filter(candidate -> !candidate.getSeller().getId().equals(alice.getId()))
+                .findFirst().orElseThrow();
+
+        mvc.perform(post("/items/{id}/favorite", item.getId()).with(csrf()).with(user(alice)))
+                .andExpect(status().isOk());
+        mvc.perform(get("/items/{id}", item.getId()).with(user(alice)))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("isFavorite", true))
+                .andExpect(content().string(containsString(">♥</span>")));
+
+        mvc.perform(post("/items/{id}/favorite", item.getId()).with(csrf()).with(user(alice)))
+                .andExpect(status().isOk());
+        mvc.perform(get("/items/{id}", item.getId()).with(user(alice)))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("isFavorite", false))
+                .andExpect(content().string(containsString(">♡</span>")));
     }
 
     @Test
@@ -113,6 +181,23 @@ class WebAccessTest {
     @WithMockUser(roles = "ADMIN")
     void adminMutationRequiresCsrfToken() throws Exception {
         mvc.perform(post("/admin/users/1/toggle-ban")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void duplicateRegistrationReturnsEmailErrorWithoutChangingExistingUser() throws Exception {
+        User existing = users.findByEmail("alice@test.com").orElseThrow();
+        String originalPassword = existing.getPassword();
+        long originalCount = users.count();
+
+        mvc.perform(post("/register").with(csrf())
+                        .param("email", existing.getEmail())
+                        .param("password", "another-password")
+                        .param("name", "Duplicate account"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("user", "email"));
+
+        assertEquals(originalCount, users.count());
+        assertEquals(originalPassword, users.findByEmail(existing.getEmail()).orElseThrow().getPassword());
     }
 
     @Test

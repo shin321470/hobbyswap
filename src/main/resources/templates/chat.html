@@ -243,7 +243,7 @@
         var input = document.getElementById('message-input');
         var messageContent = input.value.trim();
 
-        if(messageContent && stompClient) {
+        if(messageContent && stompClient && stompClient.connected) {
             var chatMessage = {
                 sender: currentUser,
                 content: messageContent,
@@ -266,10 +266,12 @@
             messageElement.classList.add('other');
         }
 
-        var contentHtml = '<span class="sender-name">' + message.sender + '</span>' +
-            '<span>' + message.content + '</span>';
-
-        messageElement.innerHTML = contentHtml;
+        var sender = document.createElement('span');
+        sender.className = 'sender-name';
+        sender.textContent = message.sender;
+        var content = document.createElement('span');
+        content.textContent = message.content;
+        messageElement.append(sender, content);
         chatBox.appendChild(messageElement);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
