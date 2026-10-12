@@ -236,7 +236,7 @@
       <div th:if="${#authentication.name == 'anonymousUser'}" style="text-align: center; margin-top: 40px; padding: 40px; border: 2px dashed black;">
         <p style="font-family: 'Space Mono'; margin-bottom: 20px;" th:text="#{comment.login_hint}">LOGIN TO JOIN THE DISCUSSION</p>
 
-        <a th:href="@{/login-check(target=${#httpServletRequest.requestURI})}"
+        <a th:href="@{/login-check(target=${'/forum/' + post.id})}"
            class="btn"
            th:text="#{nav.login}">LOGIN</a>
 

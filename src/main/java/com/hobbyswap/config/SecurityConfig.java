@@ -3,6 +3,7 @@ package com.hobbyswap.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -56,7 +57,9 @@ public class SecurityConfig {
                 // 這裡不用 securityMatcher，因為它會接住所有剩下沒被上面攔截的請求
                 .authorizeHttpRequests(auth -> auth
                         // 公開頁面設定
-                        .requestMatchers("/", "/register", "/login","/forum/**", "/css/**", "/images/**", "/uploads/**", "/h2-console/**", "/favicon.ico").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/items/new", "/forum/new").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/items/{id}", "/forum", "/forum/{id}").permitAll()
+                        .requestMatchers("/", "/register", "/login", "/css/**", "/images/**", "/uploads/**", "/h2-console/**", "/favicon.ico").permitAll()
                         // 其他都要登入
                         .anyRequest().authenticated()
                 )

@@ -4,6 +4,7 @@ import com.hobbyswap.model.Cart;
 import com.hobbyswap.model.User;
 import com.hobbyswap.service.CartService;
 import com.hobbyswap.service.UserService;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +32,7 @@ public class CartController {
     // 2. 加入購物車 (從商品詳情頁來的請求)
     @PostMapping("/add")
     public String addToCart(@RequestParam Long itemId,
-                            @RequestParam int quantity,
+                            @RequestParam @Min(1) int quantity,
                             Principal principal) {
         User user = userService.findByEmail(principal.getName());
         cartService.addToCart(user, itemId, quantity);

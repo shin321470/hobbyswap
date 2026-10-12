@@ -30,6 +30,10 @@ public class CartService {
 
     @Transactional
     public void addToCart(User user, Long itemId, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("商品數量必須大於 0");
+        }
+
         Cart cart = getOrCreateCart(user);
         Item item = itemRepository.findById(itemId).orElse(null);
 
@@ -80,6 +84,10 @@ public class CartService {
 
         if (cart.getItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
+        }
+
+        if (cart.getItems().stream().anyMatch(item -> item.getQuantity() <= 0)) {
+            throw new IllegalArgumentException("商品數量必須大於 0");
         }
 
         Order order = new Order();
