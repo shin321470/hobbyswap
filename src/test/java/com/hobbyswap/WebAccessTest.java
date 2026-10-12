@@ -1,12 +1,20 @@
 package com.hobbyswap;
 
+import com.hobbyswap.model.Cart;
+import com.hobbyswap.model.ForumCategory;
+import com.hobbyswap.model.ForumPost;
 import com.hobbyswap.model.Item;
 import com.hobbyswap.model.ItemStatus;
 import com.hobbyswap.model.User;
+import com.hobbyswap.repository.ForumRepository;
 import com.hobbyswap.repository.ItemRepository;
 import com.hobbyswap.repository.OrderRepository;
 import com.hobbyswap.repository.UserRepository;
+import com.hobbyswap.service.CartService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class WebAccessTest {
     @Autowired MockMvc mvc;
+    @Autowired CartService carts;
+    @Autowired ForumRepository posts;
     @Autowired ItemRepository items;
     @Autowired OrderRepository orders;
     @Autowired UserRepository users;
@@ -51,6 +61,37 @@ class WebAccessTest {
         Item item = items.findAll().getFirst();
 
         mvc.perform(get("/items/{id}", item.getId())).andExpect(status().isOk());
+    }
+
+    @Test
+    void visitorCanBrowseForumPost() throws Exception {
+        ForumPost post = new ForumPost();
+        post.setTitle("Public discussion");
+        post.setContent("Anyone can read this post");
+        post.setCategory(ForumCategory.GENERAL);
+        post.setAuthor(users.findByEmail("alice@test.com").orElseThrow());
+        posts.save(post);
+
+        mvc.perform(get("/forum/{id}", post.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Public discussion")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/items/new", "/forum/new"})
+    void visitorMustLogInBeforeOpeningCreationForms(String route) throws Exception {
+        mvc.perform(get(route))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/forum/1/comment", "/forum/1/delete",
+            "/forum/comments/1/reply", "/forum/comments/1/delete"})
+    void visitorMustLogInBeforeMutatingForum(String route) throws Exception {
+        mvc.perform(post(route).with(csrf()).param("content", "Guest content"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
     }
 
     @Test
@@ -99,22 +140,79 @@ class WebAccessTest {
         assertTrue(passwordEncoder.matches("secret", saved.getPassword()));
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
     @WithMockUser(username = "alice@test.com")
-    void directCheckoutRejectsZeroQuantity() throws Exception {
+    void directCheckoutRejectsNonPositiveQuantity(int quantity) throws Exception {
         Item item = items.findAll().getFirst();
         long ordersBefore = orders.count();
         int stockBefore = item.getStockQuantity();
 
         mvc.perform(post("/checkout/direct/confirm").with(csrf())
                         .param("itemId", item.getId().toString())
-                        .param("quantity", "0")
+                        .param("quantity", Integer.toString(quantity))
                         .param("receiverName", "Alice")
                         .param("phone", "0912345678")
-                        .param("address", "Taipei"));
+                        .param("address", "Taipei"))
+                .andExpect(status().isBadRequest());
 
-        assertEquals(ordersBefore, orders.count(), "Zero quantity must not create an order");
+        assertEquals(ordersBefore, orders.count(), "Invalid quantity must not create an order");
         assertEquals(stockBefore, items.findById(item.getId()).orElseThrow().getStockQuantity());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    @WithMockUser(username = "alice@test.com")
+    void directCheckoutPreviewRejectsNonPositiveQuantity(int quantity) throws Exception {
+        Item item = items.findAll().getFirst();
+
+        mvc.perform(post("/checkout/direct").with(csrf())
+                        .param("itemId", item.getId().toString())
+                        .param("quantity", Integer.toString(quantity)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"/cart/add, 0", "/cart/add, -1", "/items/{id}/buy, 0", "/items/{id}/buy, -1"})
+    @WithMockUser(username = "alice@test.com")
+    void cartEntryPointsRejectNonPositiveQuantityWithoutChangingCart(String route, int quantity)
+            throws Exception {
+        Item item = items.findAll().getFirst();
+        User alice = users.findByEmail("alice@test.com").orElseThrow();
+        carts.addToCart(alice, item.getId(), 1);
+        int stockBefore = item.getStockQuantity();
+
+        mvc.perform(post(route.replace("{id}", item.getId().toString())).with(csrf())
+                        .param("itemId", item.getId().toString())
+                        .param("quantity", Integer.toString(quantity)))
+                .andExpect(status().isBadRequest());
+
+        Cart cart = carts.getOrCreateCart(alice);
+        assertEquals(1, cart.getItems().size());
+        assertEquals(1, cart.getItems().getFirst().getQuantity());
+        assertEquals(stockBefore, item.getStockQuantity());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    @WithMockUser(username = "alice@test.com")
+    void checkoutRejectsStoredNonPositiveQuantity(int quantity) throws Exception {
+        Item item = items.findAll().getFirst();
+        User alice = users.findByEmail("alice@test.com").orElseThrow();
+        carts.addToCart(alice, item.getId(), 1);
+        carts.getOrCreateCart(alice).getItems().getFirst().setQuantity(quantity);
+        long ordersBefore = orders.count();
+        int stockBefore = item.getStockQuantity();
+
+        mvc.perform(post("/checkout/confirm").with(csrf())
+                        .param("receiverName", "Alice")
+                        .param("phone", "0912345678")
+                        .param("address", "Taipei"))
+                .andExpect(status().isBadRequest());
+
+        assertEquals(ordersBefore, orders.count());
+        assertEquals(stockBefore, item.getStockQuantity());
+        assertEquals(quantity, carts.getOrCreateCart(alice).getItems().getFirst().getQuantity());
     }
 
     @Test

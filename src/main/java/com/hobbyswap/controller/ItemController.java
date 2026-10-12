@@ -11,6 +11,7 @@ import com.hobbyswap.model.Review;
 import com.hobbyswap.repository.ReviewRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -125,7 +126,7 @@ public class ItemController {
 
     @PostMapping("/items/{id}/buy")
     public String buyNow(@PathVariable Long id,
-                         @RequestParam int quantity,
+                         @RequestParam @Min(1) int quantity,
                          Principal principal) {
 
         User user = userService.findByEmail(principal.getName());

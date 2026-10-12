@@ -5,9 +5,12 @@ import com.hobbyswap.repository.ItemRepository;
 import com.hobbyswap.repository.OrderRepository;
 import com.hobbyswap.service.CartService;
 import com.hobbyswap.service.UserService;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +27,11 @@ public class CheckoutController {
     @Autowired private UserService userService;
     @Autowired private ItemRepository itemRepository;
     @Autowired private OrderRepository orderRepository;
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> invalidQuantity(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().body(exception.getMessage());
+    }
 
     @GetMapping("/checkout")
     public String checkoutPage(Model model, Principal principal) {
@@ -52,7 +60,7 @@ public class CheckoutController {
 
     @PostMapping("/checkout/direct")
     public String directCheckoutPage(@RequestParam Long itemId,
-                                     @RequestParam int quantity,
+                                     @RequestParam @Min(1) int quantity,
                                      Model model,
                                      Principal principal) {
         User user = userService.findByEmail(principal.getName());
@@ -84,7 +92,7 @@ public class CheckoutController {
     @PostMapping("/checkout/direct/confirm")
     @Transactional
     public String confirmDirectBuy(@RequestParam Long itemId,
-                                   @RequestParam int quantity,
+                                   @RequestParam @Min(1) int quantity,
                                    @RequestParam String receiverName,
                                    @RequestParam String phone,
                                    @RequestParam String address,

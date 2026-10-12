@@ -11,6 +11,8 @@ import com.hobbyswap.repository.OrderRepository;
 import com.hobbyswap.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -129,12 +131,32 @@ class CommerceIntegrationTest {
         assertEquals(ItemStatus.SOLD, item.getStatus());
     }
 
-    @Test
-    void cartRejectsZeroQuantity() {
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void checkoutRejectsStoredNonPositiveQuantityWithoutChangingStock(int quantity) {
+        User buyer = buyer();
+        Item item = item("Old cart item", 5);
+        carts.addToCart(buyer, item.getId(), 1);
+        Cart cart = carts.getOrCreateCart(buyer);
+        cart.getItems().getFirst().setQuantity(quantity);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> carts.checkout(buyer, "Buyer", "0912345678", "Taipei"));
+        assertEquals(5, itemRepository.findById(item.getId()).orElseThrow().getStockQuantity());
+        assertTrue(orders.findByUserOrderByCreatedAtDesc(buyer).isEmpty());
+        assertEquals(quantity, carts.getOrCreateCart(buyer).getItems().getFirst().getQuantity());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void cartRejectsNonPositiveQuantity(int quantity) {
         User buyer = buyer();
         Item item = item("Puzzle", 5);
 
         assertThrows(IllegalArgumentException.class,
-                () -> carts.addToCart(buyer, item.getId(), 0));
+                () -> carts.addToCart(buyer, item.getId(), quantity));
+        assertTrue(carts.getOrCreateCart(buyer).getItems().isEmpty());
     }
 }
